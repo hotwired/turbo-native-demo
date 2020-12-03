@@ -2,6 +2,8 @@ const express = require("express");
 const layouts = require("express-ejs-layouts")
 const app = express();
 
+const PORT = 45678
+
 app.use(express.static("public"))
 app.set("view engine", "ejs")
 app.use(layouts)
@@ -36,6 +38,6 @@ app.get("/slow", (request, response) => {
   }, 3000)
 })
 
-const listener = app.listen(process.env.PORT, () => {
+const listener = app.listen(PORT, () => {
   console.log("Your app is listening on port " + listener.address().port);
 })
