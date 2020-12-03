@@ -1,0 +1,21 @@
+{
+  "name": "turbo-native-demo",
+  "version": "0.0.1",
+  "description": "A demo app for Turbo Native apps",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "express-ejs-layouts": "^2.5.0",
+    "ejs": "^3.1.5"
+  },
+  "engines": {
+    "node": "12.x"
+  },
+  "repository": {
+    "url": "https://github.com/basecamp/turbo-native-demo"
+  },
+  "license": "MIT"
+}
