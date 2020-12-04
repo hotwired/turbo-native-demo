@@ -17,7 +17,11 @@ app.get("/one", (request, response) => {
 })
 
 app.get("/two", (request, response) => {
-  response.render("two", { title: "Page Two" })
+  response.render("two", { title: "Page Two", action: request.query.action })
+})
+
+app.get("/new", (request, response) => {
+  response.render("new", { title: "Modal Page" })
 })
 
 app.get("/numbers", (request, response) => {
