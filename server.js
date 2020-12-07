@@ -8,6 +8,15 @@ app.use(express.static("public"))
 app.set("view engine", "ejs")
 app.use(layouts)
 
+// Determine platform
+app.use((request, response, next) => {
+  const userAgent = request.get("User-Agent")
+  response.locals.ios_app = userAgent.includes("Turbo Native iOS")
+  next()
+})
+
+// Routes
+
 app.get("/", (request, response) => {
   response.render("index", { title: "Turbo Native Demo" })
 })
