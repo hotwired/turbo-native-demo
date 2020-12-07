@@ -15,6 +15,13 @@ app.use((request, response, next) => {
   next()
 })
 
+// Logging
+
+app.use((request, response, next) => {
+  console.log(`${Date()} -- ${request.method} ${request.path}`)
+  next()
+})
+
 // Routes
 
 app.get("/", (request, response) => {
@@ -39,6 +46,14 @@ app.get("/scroll", (request, response) => {
 
 app.get("/new", (request, response) => {
   response.render("new", { title: "Modal Page" })
+})
+
+app.post("/new", (request, response) => {
+  response.redirect("/success")
+})
+
+app.get("/success", (request, response) => {
+  response.render("success", { title: "Thank you!" })
 })
 
 app.get("/numbers", (request, response) => {
