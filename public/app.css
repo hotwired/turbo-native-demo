@@ -45,10 +45,12 @@ body.index {
   }
 }
 
-.actions__item {
+.actions__item,
+.actions__item:visited {
   display: block;
-  padding: 0.7em 2em 0.7em 3em;
+  padding: 0.7em 0.7em 0.7em 3em;
   background: var(--color-sheet);
+  color: var(--color-text);
   text-decoration: none;
   position: relative;
 }
@@ -101,7 +103,7 @@ body.index {
   left: 1em;
   width: 1.2em;
   height: 1.2em;
-  background-color: var(--color-teal);
+  background-color: var(--color-tint);
 }
 
 @media (min-width: 45em) {
