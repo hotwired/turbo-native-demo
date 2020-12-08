@@ -1,18 +1,29 @@
 const express = require("express");
 const layouts = require("express-ejs-layouts")
+const cookieParser = require("cookie-parser")
+const bodyParser = require("body-parser")
+const multer = require('multer')
+const upload = multer()
 const app = express();
 
 // Ensure we use environment port if available for deploying
 const PORT = process.env.PORT || 45678
 
-app.use(express.static("public"))
 app.set("view engine", "ejs")
+app.use(express.static("public"))
+app.use(cookieParser())
 app.use(layouts)
 
 // Determine platform
 app.use((request, response, next) => {
   const userAgent = request.get("User-Agent")
   response.locals.ios_app = userAgent.includes("Turbo Native iOS")
+  next()
+})
+
+// Auth
+app.use((request, response, next) => {
+  response.locals.authenticated =  request.cookies && request.cookies.authenticated
   next()
 })
 
@@ -66,7 +77,28 @@ app.get("/nonexistent", (request, response) => {
 })
 
 app.get("/protected", (request, response) => {
-  response.status(401).send("Unauthorized")
+  if (response.locals.authenticated) {
+    response.render("protected", { title: "Protected" })
+  } else {
+    response.status(401).send("Unauthorized")
+  }
+})
+
+app.get("/signin", (request, response) => {
+  response.render("signin", { title: "Sign In" })
+})
+
+app.post("/signin", upload.none(), (request, response) => {
+  // Cookie expires in one day
+  const expiration = new Date(Date.now() + 86400000)
+
+  response.cookie("authenticated", request.body.name, { expires: expiration, httpOnly: true })
+  response.redirect("/")
+})
+
+app.post("/signout", (request, response) => {
+  response.clearCookie("authenticated")
+  response.redirect("/")
 })
 
 app.get("/slow", (request, response) => {

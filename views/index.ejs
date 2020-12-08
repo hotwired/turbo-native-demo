@@ -1,3 +1,9 @@
+<% if (locals.authenticated) { %>
+  <form action="/signout" method="post">
+    Welcome <%= locals.authenticated %> <input type="submit" value="Sign Out">
+  </form>
+<% } %>
+
 <h1>Hello from Turbo Native!</h1>    
 <p>This demo app will help you get acquainted with the framework.</p>
 
