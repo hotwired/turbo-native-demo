@@ -56,6 +56,10 @@ app.get("/scroll", (request, response) => {
   response.render("scroll", { title: "Scroll Restoration" })
 })
 
+app.get("/files", (request, response) => {
+  response.render("files", { title: "Handling Files" })
+})
+
 app.get("/new", (request, response) => {
   response.render("new", { title: "Modal Page" })
 })
