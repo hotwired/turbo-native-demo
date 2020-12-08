@@ -48,7 +48,7 @@ body.index {
 .actions__item {
   display: block;
   padding: 0.7em 2em 0.7em 3em;
-  background: var(--color-sheet) url("/images/disclosure.svg") right 0.7em center / 0.75em no-repeat;
+  background: var(--color-sheet);
   text-decoration: none;
   position: relative;
 }
