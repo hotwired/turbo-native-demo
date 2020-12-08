@@ -1,6 +1,6 @@
 # Turbo Native Demo
 
-A small app to demonstrate how to use Turbo with a native app
+A small app to demonstrate how to use Turbo with a native app. The demo app is available at `https://turbo-native-demo.glitch.me`.
 
 ## Running Locally
 

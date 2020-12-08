@@ -2,6 +2,7 @@ const express = require("express");
 const layouts = require("express-ejs-layouts")
 const app = express();
 
+// Ensure we use environment port if available for deploying
 const PORT = process.env.PORT || 45678
 
 app.use(express.static("public"))
@@ -74,6 +75,10 @@ app.get("/slow", (request, response) => {
   }, 3000)
 })
 
+app.get("/test", (request, response) => {
+  response.sendStatus(200)
+})
+
 const listener = app.listen(PORT, () => {
-  console.log("Your app is listening on port " + listener.address().port);
+  console.log("Server is listening on port " + listener.address().port);
 })
