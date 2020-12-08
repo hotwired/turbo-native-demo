@@ -3,8 +3,12 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
     <title><%= title %></title>
-    <link rel="stylesheet" href="/style.css">
+
+    <link rel="stylesheet" href="/base.css">
+    <link rel="stylesheet" href="/utilities.css">
+    <link rel="stylesheet" href="/app.css">
 
     <% if (locals.ios_app) { %>
       <link rel="stylesheet" href="/ios.css">
@@ -13,9 +17,16 @@
     <script src="/turbolinks.js"></script>
   </head>
   <body>
-    <%- body %>
-    <footer>
-      Rendered at <%- new Date() %>
-    </footer>
+    <nav class="nav text --align-center pad --hard display --none">
+      <h1 class="nav__title text --size-m">Turbo Native</h1>
+    </nav>
+
+    <main id="content" class="grid pad --bottom-soft">
+      <%- body %>
+      
+      <footer class="text --size-s --color-subtle space --top-xl">
+        Rendered <%- new Date() %>
+      </footer>
+    </main>
   </body>
 </html>

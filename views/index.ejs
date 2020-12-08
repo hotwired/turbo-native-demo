@@ -1,26 +1,55 @@
-<% if (locals.authenticated) { %>
-  <form action="/signout" method="post">
-    Welcome <%= locals.authenticated %> <input type="submit" value="Sign Out">
-  </form>
-<% } %>
+<header class="intro">
+  <% if (locals.authenticated) { %>
+    <form action="/signout" method="post">
+      Welcome <%= locals.authenticated %> <input type="submit" value="Sign Out">
+    </form>
+  <% } %>
 
-<h1>Hello from Turbo Native!</h1>    
-<p>This demo app will help you get acquainted with the framework.</p>
+  <h1 class="space">Turbo Native Demo</h1>
+  <p class="space --ends-flush">This demo app will help you get acquainted with the framework.</p>
+</header>
 
-<h2>Basic Features</h2>
-<ul>
-  <li><a href="/one">Open a new view controller</a> by following a regular link.</li>
-  <li><a href="/slow">See the loading indicator</a> and test Turbo’s preview cache with this slow-loading page.</li>
-  <li><a href="/long">View a long screen</a> and test Turbo’s scroll restoration.</li>
-  <li><a href="/nonexistent">Trigger an HTTP 404</a> to see how Turbo handles error responses.</li>
-</ul>
+<h2 class="actions__header space --top-xl">Basic Features</h2>
+<div class="actions grid__item --start-2 --span-10 space --bottom-s">
+  <a class="actions__item" href="/one">
+    <div class="actions__icon --navigate" aria-hidden="true"></div>
+    Navigate with a regular link
+  </a>
+  <a class="actions__item" href="/slow">
+    <div class="actions__icon --slow" aria-hidden="true"></div>
+    Open a slow-loading page
+  </a>
+  <a class="actions__item" href="/long">
+    <div class="actions__icon --scroll" aria-hidden="true"></div>
+    Try Turbo’s scroll restoration
+  </a>
+  <a class="actions__item" href="/nonexistent">
+    <div class="actions__icon --error" aria-hidden="true"></div>
+    Hit an HTTP 404 error
+  </a>
+</div>
 
-<h2>Advanced Features</h2>
+<h2 class="actions__header space --top-xl">Advanced Features</h2>
 
-<ul>
-  <li><a href="/protected">Visit a protected area</a> to see how to handle an unauthorized session.</li>
-  <li><a href="/new">Load a modal view controller</a> to see how to customize the presentation.</li>
-  <li><a href="/numbers">Load a native view controller</a> to see how to intercept the proposal and handle it natively.</li>
-  <li><a href="https://github.com/turbolinks/turbolinks" target="_blank">Follow an external link</a> to open it in Safari.</li>
-  <li><a href="/files">Handling files</a> to see how to how to handle files</li>
-</ul>
+<div class="actions grid__item --start-2 --span-10">
+  <a class="actions__item" href="/protected">
+    <div class="actions__icon --protected" aria-hidden="true"></div>
+    Reject unauthorized access
+  </a>
+  <a class="actions__item" href="/new">
+    <div class="actions__icon --modal" aria-hidden="true"></div>
+    Load a view modally
+  </a>
+  <a class="actions__item" href="/numbers">
+    <div class="actions__icon --native" aria-hidden="true"></div>
+    Intercept with a native view
+  </a>
+  <a class="actions__item" href="https://github.com/turbolinks/turbolinks" target="_blank">
+    <div class="actions__icon --external" aria-hidden="true"></div>
+    Follow an external link
+  </a>
+  <a class="actions__item" href="/files">
+    <div class="actions__icon --files" aria-hidden="true"></div>
+    Handling files
+  </a>
+</div>
