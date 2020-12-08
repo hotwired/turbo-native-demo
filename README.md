@@ -8,7 +8,7 @@ Clone the repo, and then:
 
 ```
 $ npm install
-$ npm start
+$ npx nodemon
 ```
 
-Open your browser and point the native app to `http://locahost:45678`
+The server is running on `http://locahost:45678`. You can open that url in the browser and ensure the native app is using the same url.
