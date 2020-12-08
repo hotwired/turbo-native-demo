@@ -1,3 +1,7 @@
+body.index {
+  background-color:var(--color-neutral)
+}
+
 .nav {
   position: fixed;
   top: 0;

@@ -56,7 +56,7 @@
 
 html {
   font-size: 10px;
-  background-color:var(--color-neutral)
+  background-color:var(--color-white)
 }
 
 body {
@@ -71,7 +71,7 @@ body {
   font-size: var(--type-base);
   /* font-variation-settings: "wdth" 180; */
   color: var(--color-text);
-  background-color:var(--color-neutral)
+  background-color: transparent;
 }
 
 @media (min-width: 45em) {

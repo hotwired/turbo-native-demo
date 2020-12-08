@@ -37,7 +37,7 @@ app.use((request, response, next) => {
 // Routes
 
 app.get("/", (request, response) => {
-  response.render("index", { title: "Turbo Native Demo" })
+  response.render("index", { title: "Turbo Native Demo", page_class: "index" })
 })
 
 app.get("/one", (request, response) => {
