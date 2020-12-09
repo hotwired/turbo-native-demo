@@ -14,6 +14,20 @@ app.use(express.static("public"))
 app.use(cookieParser())
 app.use(layouts)
 
+// Turbo version
+app.use((request, response, next) => {
+  response.locals.useTurbolinks = request.cookies.turbolinks || request.query.turbolinks
+  
+  if (response.locals.useTurbolinks) {
+    // Set cookie for this session
+    response.cookie("turbolinks", "1")
+  } else {
+    response.clearCookie("turbolinks")
+  }
+
+  next()
+})
+
 // Determine platform
 app.use((request, response, next) => {
   const userAgent = request.get("User-Agent")

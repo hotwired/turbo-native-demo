@@ -14,7 +14,7 @@
       <link rel="stylesheet" href="/ios.css">
     <% } %>
 
-    <script src="/turbolinks.js"></script>
+    <script src="<%= locals.useTurbolinks ? "/turbolinks-5.2.0.js" : "/turbo-7.0.0-beta.1.js" %>"></script>
   </head>
   <body class="<%= locals.page_class || "" %>">
     <main id="content" class="grid pad --bottom-soft">
@@ -22,6 +22,12 @@
       
       <footer class="text --size-s --color-subtle space --top-xxl">
         Rendered <%- new Date() %>
+
+        <% if (locals.useTurbolinks) { %>
+          via Turbolinks 5
+        <% } else { %>
+          via Turbo 7
+        <% } %>
       </footer>
     </main>
   </body>
