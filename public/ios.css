@@ -2,3 +2,5 @@ a,
 a:visited {
   text-decoration: none;
 }
+
+.page-title { display: none;}

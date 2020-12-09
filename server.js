@@ -41,19 +41,19 @@ app.get("/", (request, response) => {
 })
 
 app.get("/one", (request, response) => {
-  response.render("one", { title: "Page One" })
+  response.render("one", { title: "How’d You Get Here?" })
 })
 
 app.get("/two", (request, response) => {
-  response.render("two", { title: "Page Two", action: request.query.action })
+  response.render("two", { title: "Push or Replace?", action: request.query.action })
 })
 
 app.get("/long", (request, response) => {
-  response.render("long", { title: "Long Page" })
+  response.render("long", { title: "A Really Long Page" })
 })
 
 app.get("/scroll", (request, response) => {
-  response.render("scroll", { title: "Scroll Restoration" })
+  response.render("scroll", { title: "Restoring Your Scroll" })
 })
 
 app.get("/files", (request, response) => {
@@ -61,7 +61,7 @@ app.get("/files", (request, response) => {
 })
 
 app.get("/new", (request, response) => {
-  response.render("new", { title: "Modal Page" })
+  response.render("new", { title: "A Modal Webpage" })
 })
 
 app.post("/new", (request, response) => {
@@ -69,11 +69,11 @@ app.post("/new", (request, response) => {
 })
 
 app.get("/success", (request, response) => {
-  response.render("success", { title: "Thank you!" })
+  response.render("success", { title: "It Worked!" })
 })
 
 app.get("/numbers", (request, response) => {
-  response.render("numbers", { title: "Numbers" })
+  response.render("numbers", { title: "A List of Numbers" })
 })
 
 app.get("/nonexistent", (request, response) => {
@@ -82,7 +82,7 @@ app.get("/nonexistent", (request, response) => {
 
 app.get("/protected", (request, response) => {
   if (response.locals.authenticated) {
-    response.render("protected", { title: "Protected" })
+    response.render("protected", { title: "Protected Webpage" })
   } else {
     response.status(401).send("Unauthorized")
   }
@@ -107,7 +107,7 @@ app.post("/signout", (request, response) => {
 
 app.get("/slow", (request, response) => {
   setTimeout(() => {
-      response.render("slow", { title: "Slow Page" })
+      response.render("slow", { title: "Slow-loading Page" })
   }, 3000)
 })
 

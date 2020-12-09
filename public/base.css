@@ -131,7 +131,7 @@ dl, h4, h5, h6, ol, p, ul {
 }
 
 dl, ol, p, ul {
-  margin: var(--space-m) 0;
+  margin: 0 0 var(--space-m);
   line-height: var(--leading-l);
   font-weight:350
 }
