@@ -2,30 +2,6 @@ body.index {
   background-color:var(--color-background-index);
 }
 
-.nav {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  background: var(--color-white);
-  z-index: 9;
-}
-
-.nav__title {
-  margin: 0;
-  
-}
-
-.card {
-  display: block;
-  background: var(--color-sheet);
-  padding: var(--space-m);
-  border-radius: var(--space-s);
-  box-shadow: 0.5em 0.5em 1em rgba(0,0,0,0.05);
-  min-height: 8em;
-  margin-bottom: min(2.5vw, 4rem)
-}
-
 @media (min-width: 45em) {
   .actions {
     display: flex;
