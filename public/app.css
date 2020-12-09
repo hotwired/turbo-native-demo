@@ -1,5 +1,5 @@
 body.index {
-  background-color:var(--color-neutral)
+  background-color:var(--color-background-index);
 }
 
 .nav {
@@ -57,7 +57,8 @@ body.index {
 
 @media(hover: hover) {
   .actions__item:hover {
-    background-color: var(--color-yellow);; 
+    background-color: var(--color-tint);
+    color: var(--color-white);
   }
 }
 
@@ -113,6 +114,12 @@ body.index {
     width: 3em;
     height: 3em;
     margin: 0 auto 1em auto;
+  }
+}
+
+@media(hover: hover) {
+  .actions__item:hover .actions__icon {
+    background-color: var(--color-white);
   }
 }
 
