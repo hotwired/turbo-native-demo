@@ -1,5 +1,13 @@
 body.index {
-  background-color:var(--color-background-index);
+  background-color: var(--color-background-index);
+}
+
+body:not(.index) .page-title {
+  background: var(--color-neutral);
+  margin: -1em 0 1em;
+  padding: var(--space-l);
+  text-align: center;
+  grid-column: 1/span 14 !important;
 }
 
 @media (min-width: 45em) {
