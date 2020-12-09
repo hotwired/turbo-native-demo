@@ -218,3 +218,31 @@ hr {
   border-top:.1rem solid var(--color-text)
 }
 
+input[type=text] {
+  display: block;
+  width: 100%;
+  padding: 0.75em;
+  margin: 0 0 var(--space-m);
+  font-size: var(--type-m);
+  color: var(--color-text);
+  background: var(--color-sheet);
+  border: 1px solid var(--color-border);
+}
+
+button {
+  display: block;
+  width: 100%;
+  padding: 0.75em 1.5em;
+  margin: 0 0 var(--space-m);
+  background: var(--color-tint);
+  font-size: var(--type-m);
+  color: var(--color-white);
+  border: 0;
+  border-radius: 0.5em;
+}
+
+@media (min-width: 45em) {
+  button {
+    width: auto;
+  }
+}

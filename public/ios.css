@@ -4,3 +4,7 @@ a:visited {
 }
 
 .page-title { display: none;}
+
+input[type=text]:focus {
+  outline: 0;
+}
