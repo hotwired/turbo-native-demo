@@ -72,7 +72,8 @@
 
 html {
   font-size: 10px;
-  background-color:var(--color-background-main)
+  background-color: var(--color-background-main);
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
