@@ -31,7 +31,7 @@ app.use((request, response, next) => {
 // Determine platform
 app.use((request, response, next) => {
   const userAgent = request.get("User-Agent")
-  response.locals.ios_app = userAgent.includes("Turbo Native iOS")
+  response.locals.native_app = userAgent.includes("Turbo Native")
   next()
 })
 
