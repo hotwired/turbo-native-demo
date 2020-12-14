@@ -5,12 +5,14 @@
   --color-gray: #666;
   --color-beige: #fbf7f0;
   --color-yellow: #ffe801;
-  --color-teal: #15d1d8;
-  --color-pink: #ef6baa;
+  --color-teal: #5cd8e5;
+  --color-pink: #e9509a;
   --color-blue: #317AF6;
   --color-text: var(--color-black);
   --color-text-subtle: var(--color-gray);
-  --color-tint: var(--color-blue);
+  --color-text-reversed: var(--color-white);
+  --color-tint: var(--color-teal);
+  --color-tint-alt: var(--color-yellow);
   --color-background-main: var(--color-white);
   --color-background-index: var(--color-beige);
   --color-sheet: var(--color-white);
@@ -46,7 +48,9 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
+    --color-pink: #ef7baa;
     --color-text: var(--color-white);
+    --color-text-reversed: var(--color-black);
     --color-neutral: var(--color-dark-gray);
     --color-background-main: #000;
     --color-background-index: #000;
@@ -195,14 +199,15 @@ small {
 }
 
 a, a:visited {
-  color: var(--color-tint);
+  color: var(--color-text);
   text-decoration-thickness: .1em;
   text-decoration-width: .1rem;
+  font-weight: 600;
 }
 
 a:hover {
-  -webkit-text-decoration-color: var(--color-tint);
-  text-decoration-color: var(--color-tint);
+  -webkit-text-decoration-color: var(--color-yellow);
+  text-decoration-color: var(--color-yellow);
   text-decoration-thickness: .2em;
   text-decoration-width:.2em
 }
@@ -230,14 +235,18 @@ input[type=text] {
   border: 1px solid var(--color-border);
 }
 
-button {
+button,
+.button,
+.button:visited {
   display: block;
   width: 100%;
   padding: 0.75em 1.5em;
   margin: 0 0 var(--space-m);
   background: var(--color-tint);
   font-size: var(--type-m);
-  color: var(--color-white);
+  color: var(--color-black);
+  text-align: center;
+  line-height: 1.25;
   border: 0;
   border-radius: 0.5em;
 }

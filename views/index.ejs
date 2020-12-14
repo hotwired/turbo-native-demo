@@ -1,7 +1,7 @@
 <% if (locals.authenticated) { %>
   <form action="/signout" method="post" class="auth grid__item --start-2 --span-10 space --bottom-m">
     👋 Hey <%= locals.authenticated %>!
-    <button class="button --text" type="submit">Sign Out</button>
+    <button class="auth__signout" type="submit">Sign Out</button>
   </form>
 <% } %>
 
