@@ -3,11 +3,19 @@ body.index {
 }
 
 body:not(.index) .page-title {
+  margin: -0.5em 0 0.5em;
+  padding: var(--space-m);
   background: var(--color-neutral);
-  margin: -1em 0 1em;
-  padding: var(--space-l);
   text-align: center;
-  grid-column: 1/span 14 !important;
+  grid-column: 1/span 3 !important;
+}
+
+@media (min-width: 45em) {
+  body:not(.index) .page-title {
+    margin: -1em 0 1em;
+    padding: var(--space-l);
+    grid-column: 1/span 14 !important;
+  }
 }
 
 @media (min-width: 45em) {
