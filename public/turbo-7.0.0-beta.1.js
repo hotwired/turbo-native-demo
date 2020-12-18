@@ -424,11 +424,11 @@ Copyright © 2020 Basecamp, LLC
                 }
             };
             this.linkClicked = ((event) => {
-                if (this.clickEvent && this.respondsToEventTarget(event.target)) {
-                    if (this.delegate.shouldInterceptLinkClick(event.target, event.data.url)) {
+                if (this.clickEvent && this.respondsToEventTarget(event.target) && event.target instanceof Element) {
+                    if (this.delegate.shouldInterceptLinkClick(event.target, event.detail.url)) {
                         this.clickEvent.preventDefault();
                         event.preventDefault();
-                        this.delegate.linkClickIntercepted(event.target, event.data.url);
+                        this.delegate.linkClickIntercepted(event.target, event.detail.url);
                     }
                 }
                 delete this.clickEvent;
