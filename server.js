@@ -70,6 +70,14 @@ app.get("/scroll", (request, response) => {
   response.render("scroll", { title: "Restoring Your Scroll" })
 })
 
+app.get("/follow", (request, response) => {
+  response.redirect("/redirected")
+})
+
+app.get("/redirected", (request, response) => {
+  response.render("redirected", { title: "Redirected Page" })
+})
+
 app.get("/files", (request, response) => {
   response.render("files", { title: "Handling Files" })
 })
