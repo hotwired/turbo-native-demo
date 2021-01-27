@@ -1,6 +1,6 @@
 /*
-Turbo 7.0.0-beta.1
-Copyright © 2020 Basecamp, LLC
+Turbo 7.0.0-beta.3
+Copyright © 2021 Basecamp, LLC
  */
 (function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -26,80 +26,168 @@ Copyright © 2020 Basecamp, LLC
         Object.setPrototypeOf(HTMLElement, BuiltInHTMLElement);
     })();
 
-    class Location {
-        constructor(url) {
-            const linkWithAnchor = document.createElement("a");
-            linkWithAnchor.href = url;
-            this.absoluteURL = linkWithAnchor.href;
-            const anchorLength = linkWithAnchor.hash.length;
-            if (anchorLength < 2) {
-                this.requestURL = this.absoluteURL;
+    const submittersByForm = new WeakMap;
+    function findSubmitterFromClickTarget(target) {
+        const element = target instanceof Element ? target : target instanceof Node ? target.parentElement : null;
+        const candidate = element ? element.closest("input, button") : null;
+        return (candidate === null || candidate === void 0 ? void 0 : candidate.type) == "submit" ? candidate : null;
+    }
+    function clickCaptured(event) {
+        const submitter = findSubmitterFromClickTarget(event.target);
+        if (submitter && submitter.form) {
+            submittersByForm.set(submitter.form, submitter);
+        }
+    }
+    (function () {
+        if ("SubmitEvent" in window)
+            return;
+        addEventListener("click", clickCaptured, true);
+        Object.defineProperty(Event.prototype, "submitter", {
+            get() {
+                if (this.type == "submit" && this.target instanceof HTMLFormElement) {
+                    return submittersByForm.get(this.target);
+                }
+            }
+        });
+    })();
+
+    var FrameLoadingStyle;
+    (function (FrameLoadingStyle) {
+        FrameLoadingStyle["eager"] = "eager";
+        FrameLoadingStyle["lazy"] = "lazy";
+    })(FrameLoadingStyle || (FrameLoadingStyle = {}));
+    class FrameElement extends HTMLElement {
+        constructor() {
+            super();
+            this.loaded = Promise.resolve();
+            this.delegate = new FrameElement.delegateConstructor(this);
+        }
+        static get observedAttributes() {
+            return ["loading", "src"];
+        }
+        connectedCallback() {
+            this.delegate.connect();
+        }
+        disconnectedCallback() {
+            this.delegate.disconnect();
+        }
+        attributeChangedCallback(name) {
+            if (name == "loading") {
+                this.delegate.loadingStyleChanged();
+            }
+            else if (name == "src") {
+                this.delegate.sourceURLChanged();
+            }
+        }
+        get src() {
+            return this.getAttribute("src");
+        }
+        set src(value) {
+            if (value) {
+                this.setAttribute("src", value);
             }
             else {
-                this.requestURL = this.absoluteURL.slice(0, -anchorLength);
-                this.anchor = linkWithAnchor.hash.slice(1);
+                this.removeAttribute("src");
             }
         }
-        static get currentLocation() {
-            return this.wrap(window.location.toString());
+        get loading() {
+            return frameLoadingStyleFromString(this.getAttribute("loading") || "");
         }
-        static wrap(locatable) {
-            if (typeof locatable == "string") {
-                return new this(locatable);
+        set loading(value) {
+            if (value) {
+                this.setAttribute("loading", value);
             }
-            else if (locatable != null) {
-                return locatable;
+            else {
+                this.removeAttribute("loading");
             }
         }
-        getOrigin() {
-            return this.absoluteURL.split("/", 3).join("/");
+        get disabled() {
+            return this.hasAttribute("disabled");
         }
-        getPath() {
-            return (this.requestURL.match(/\/\/[^/]*(\/[^?;]*)/) || [])[1] || "/";
+        set disabled(value) {
+            if (value) {
+                this.setAttribute("disabled", "");
+            }
+            else {
+                this.removeAttribute("disabled");
+            }
         }
-        getPathComponents() {
-            return this.getPath().split("/").slice(1);
+        get autoscroll() {
+            return this.hasAttribute("autoscroll");
         }
-        getLastPathComponent() {
-            return this.getPathComponents().slice(-1)[0];
+        set autoscroll(value) {
+            if (value) {
+                this.setAttribute("autoscroll", "");
+            }
+            else {
+                this.removeAttribute("autoscroll");
+            }
         }
-        getExtension() {
-            return (this.getLastPathComponent().match(/\.[^.]*$/) || [])[0] || "";
+        get complete() {
+            return !this.delegate.isLoading;
         }
-        isHTML() {
-            return !!this.getExtension().match(/^(?:|\.(?:htm|html|xhtml))$/);
+        get isActive() {
+            return this.ownerDocument === document && !this.isPreview;
         }
-        isPrefixedBy(location) {
-            const prefixURL = getPrefixURL(location);
-            return this.isEqualTo(location) || stringStartsWith(this.absoluteURL, prefixURL);
-        }
-        isEqualTo(location) {
-            return location && this.absoluteURL === location.absoluteURL;
-        }
-        toCacheKey() {
-            return this.requestURL;
-        }
-        toJSON() {
-            return this.absoluteURL;
-        }
-        toString() {
-            return this.absoluteURL;
-        }
-        valueOf() {
-            return this.absoluteURL;
+        get isPreview() {
+            var _a, _b;
+            return (_b = (_a = this.ownerDocument) === null || _a === void 0 ? void 0 : _a.documentElement) === null || _b === void 0 ? void 0 : _b.hasAttribute("data-turbo-preview");
         }
     }
-    function getPrefixURL(location) {
-        return addTrailingSlash(location.getOrigin() + location.getPath());
+    function frameLoadingStyleFromString(style) {
+        switch (style.toLowerCase()) {
+            case "lazy": return FrameLoadingStyle.lazy;
+            default: return FrameLoadingStyle.eager;
+        }
     }
-    function addTrailingSlash(url) {
-        return stringEndsWith(url, "/") ? url : url + "/";
+
+    function expandURL(locatable) {
+        const anchor = document.createElement("a");
+        anchor.href = locatable.toString();
+        return new URL(anchor.href);
     }
-    function stringStartsWith(string, prefix) {
-        return string.slice(0, prefix.length) === prefix;
+    function getAnchor(url) {
+        let anchorMatch;
+        if (url.hash) {
+            return url.hash.slice(1);
+        }
+        else if (anchorMatch = url.href.match(/#(.*)$/)) {
+            return anchorMatch[1];
+        }
+        else {
+            return "";
+        }
     }
-    function stringEndsWith(string, suffix) {
-        return string.slice(-suffix.length) === suffix;
+    function getExtension(url) {
+        return (getLastPathComponent(url).match(/\.[^.]*$/) || [])[0] || "";
+    }
+    function isHTML(url) {
+        return !!getExtension(url).match(/^(?:|\.(?:htm|html|xhtml))$/);
+    }
+    function isPrefixedBy(baseURL, url) {
+        const prefix = getPrefix(url);
+        return baseURL.href === expandURL(prefix).href || baseURL.href.startsWith(prefix);
+    }
+    function toCacheKey(url) {
+        const anchorLength = url.hash.length;
+        if (anchorLength < 2) {
+            return url.href;
+        }
+        else {
+            return url.href.slice(0, -anchorLength);
+        }
+    }
+    function getPathComponents(url) {
+        return url.pathname.split("/").slice(1);
+    }
+    function getLastPathComponent(url) {
+        return getPathComponents(url).slice(-1)[0];
+    }
+    function getPrefix(url) {
+        return addTrailingSlash(url.origin + url.pathname);
+    }
+    function addTrailingSlash(value) {
+        return value.endsWith("/") ? value : value + "/";
     }
 
     class FetchResponse {
@@ -112,14 +200,20 @@ Copyright © 2020 Basecamp, LLC
         get failed() {
             return !this.succeeded;
         }
+        get clientError() {
+            return this.statusCode >= 400 && this.statusCode <= 499;
+        }
+        get serverError() {
+            return this.statusCode >= 500 && this.statusCode <= 599;
+        }
         get redirected() {
             return this.response.redirected;
         }
         get location() {
-            return Location.wrap(this.response.url);
+            return expandURL(this.response.url);
         }
         get isHTML() {
-            return this.contentType && this.contentType.match(/^text\/html|^application\/xhtml\+xml/);
+            return this.contentType && this.contentType.match(/^(?:text\/([^\s;,]+\b)?html|application\/xhtml\+xml)\b/);
         }
         get statusCode() {
             return this.response.status;
@@ -153,6 +247,9 @@ Copyright © 2020 Basecamp, LLC
     }
     function nextMicrotask() {
         return Promise.resolve();
+    }
+    function parseHTMLDocument(html = "") {
+        return new DOMParser().parseFromString(html, "text/html");
     }
     function unindent(strings, ...values) {
         const lines = interpolate(strings, values).replace(/^\n/, "").split("\n");
@@ -205,24 +302,14 @@ Copyright © 2020 Basecamp, LLC
             this.abortController = new AbortController;
             this.delegate = delegate;
             this.method = method;
-            this.location = location;
             this.body = body;
+            this.url = mergeFormDataEntries(location, this.entries);
         }
-        get url() {
-            const url = this.location.absoluteURL;
-            const query = this.params.toString();
-            if (this.isIdempotent && query.length) {
-                return [url, query].join(url.includes("?") ? "&" : "?");
-            }
-            else {
-                return url;
-            }
+        get location() {
+            return this.url;
         }
         get params() {
-            return this.entries.reduce((params, [name, value]) => {
-                params.append(name, value.toString());
-                return params;
-            }, new URLSearchParams);
+            return this.url.searchParams;
         }
         get entries() {
             return this.body ? Array.from(this.body.entries()) : [];
@@ -235,7 +322,7 @@ Copyright © 2020 Basecamp, LLC
             dispatch("turbo:before-fetch-request", { detail: { fetchOptions } });
             try {
                 this.delegate.requestStarted(this);
-                const response = await fetch(this.url, fetchOptions);
+                const response = await fetch(this.url.href, fetchOptions);
                 return await this.receive(response);
             }
             catch (error) {
@@ -288,27 +375,37 @@ Copyright © 2020 Basecamp, LLC
             return this.abortController.signal;
         }
     }
+    function mergeFormDataEntries(url, entries) {
+        for (const [name, value] of entries) {
+            url.searchParams.append(name, value.toString());
+        }
+        return url;
+    }
 
-    class FormInterceptor {
+    class AppearanceObserver {
         constructor(delegate, element) {
-            this.submitBubbled = (event) => {
-                if (event.target instanceof HTMLFormElement) {
-                    const form = event.target;
-                    if (this.delegate.shouldInterceptFormSubmission(form)) {
-                        event.preventDefault();
-                        event.stopImmediatePropagation();
-                        this.delegate.formSubmissionIntercepted(form);
-                    }
+            this.started = false;
+            this.intersect = entries => {
+                const lastEntry = entries.slice(-1)[0];
+                if (lastEntry === null || lastEntry === void 0 ? void 0 : lastEntry.isIntersecting) {
+                    this.delegate.elementAppearedInViewport(this.element);
                 }
             };
             this.delegate = delegate;
             this.element = element;
+            this.intersectionObserver = new IntersectionObserver(this.intersect);
         }
         start() {
-            this.element.addEventListener("submit", this.submitBubbled);
+            if (!this.started) {
+                this.started = true;
+                this.intersectionObserver.observe(this.element);
+            }
         }
         stop() {
-            this.element.removeEventListener("submit", this.submitBubbled);
+            if (this.started) {
+                this.started = false;
+                this.intersectionObserver.unobserve(this.element);
+            }
         }
     }
 
@@ -322,20 +419,26 @@ Copyright © 2020 Basecamp, LLC
         FormSubmissionState[FormSubmissionState["stopped"] = 5] = "stopped";
     })(FormSubmissionState || (FormSubmissionState = {}));
     class FormSubmission {
-        constructor(delegate, formElement, mustRedirect = false) {
+        constructor(delegate, formElement, submitter, mustRedirect = false) {
             this.state = FormSubmissionState.initialized;
             this.delegate = delegate;
             this.formElement = formElement;
-            this.formData = new FormData(formElement);
+            this.formData = buildFormData(formElement, submitter);
+            this.submitter = submitter;
             this.fetchRequest = new FetchRequest(this, this.method, this.location, this.formData);
             this.mustRedirect = mustRedirect;
         }
         get method() {
-            const method = this.formElement.getAttribute("method") || "";
+            var _a;
+            const method = ((_a = this.submitter) === null || _a === void 0 ? void 0 : _a.getAttribute("formmethod")) || this.formElement.getAttribute("method") || "";
             return fetchMethodFromString(method.toLowerCase()) || FetchMethod.get;
         }
+        get action() {
+            var _a;
+            return ((_a = this.submitter) === null || _a === void 0 ? void 0 : _a.getAttribute("formaction")) || this.formElement.action;
+        }
         get location() {
-            return Location.wrap(this.formElement.action);
+            return expandURL(this.action);
         }
         async start() {
             const { initialized, requesting } = FormSubmissionState;
@@ -371,7 +474,10 @@ Copyright © 2020 Basecamp, LLC
             this.result = { success: response.succeeded, fetchResponse: response };
         }
         requestSucceededWithResponse(request, response) {
-            if (this.requestMustRedirect(request) && !response.redirected) {
+            if (response.clientError || response.serverError) {
+                this.delegate.formSubmissionFailedWithResponse(this, response);
+            }
+            else if (this.requestMustRedirect(request) && responseSucceededWithoutRedirect(response)) {
                 const error = new Error("Form responses must redirect to another location");
                 this.delegate.formSubmissionErrored(this, error);
             }
@@ -398,6 +504,15 @@ Copyright © 2020 Basecamp, LLC
             return !request.isIdempotent && this.mustRedirect;
         }
     }
+    function buildFormData(formElement, submitter) {
+        const formData = new FormData(formElement);
+        const name = submitter === null || submitter === void 0 ? void 0 : submitter.getAttribute("name");
+        const value = submitter === null || submitter === void 0 ? void 0 : submitter.getAttribute("value");
+        if (name && formData.get(name) != value) {
+            formData.append(name, value || "");
+        }
+        return formData;
+    }
     function getCookieValue(cookieName) {
         if (cookieName != null) {
             const cookies = document.cookie ? document.cookie.split("; ") : [];
@@ -411,6 +526,142 @@ Copyright © 2020 Basecamp, LLC
     function getMetaContent(name) {
         const element = document.querySelector(`meta[name="${name}"]`);
         return element && element.content;
+    }
+    function responseSucceededWithoutRedirect(response) {
+        return response.statusCode == 200 && !response.redirected;
+    }
+
+    class Snapshot {
+        constructor(element) {
+            this.element = element;
+        }
+        get children() {
+            return [...this.element.children];
+        }
+        hasAnchor(anchor) {
+            return this.getElementForAnchor(anchor) != null;
+        }
+        getElementForAnchor(anchor) {
+            try {
+                return this.element.querySelector(`[id='${anchor}'], a[name='${anchor}']`);
+            }
+            catch (_a) {
+                return null;
+            }
+        }
+        get firstAutofocusableElement() {
+            return this.element.querySelector("[autofocus]");
+        }
+        get permanentElements() {
+            return [...this.element.querySelectorAll("[id][data-turbo-permanent]")];
+        }
+        getPermanentElementById(id) {
+            return this.element.querySelector(`#${id}[data-turbo-permanent]`);
+        }
+        getPermanentElementsPresentInSnapshot(snapshot) {
+            return this.permanentElements.filter(({ id }) => snapshot.getPermanentElementById(id));
+        }
+    }
+
+    class FormInterceptor {
+        constructor(delegate, element) {
+            this.submitBubbled = ((event) => {
+                if (event.target instanceof HTMLFormElement) {
+                    const form = event.target;
+                    const submitter = event.submitter || undefined;
+                    if (this.delegate.shouldInterceptFormSubmission(form, submitter)) {
+                        event.preventDefault();
+                        event.stopImmediatePropagation();
+                        this.delegate.formSubmissionIntercepted(form, submitter);
+                    }
+                }
+            });
+            this.delegate = delegate;
+            this.element = element;
+        }
+        start() {
+            this.element.addEventListener("submit", this.submitBubbled);
+        }
+        stop() {
+            this.element.removeEventListener("submit", this.submitBubbled);
+        }
+    }
+
+    class View {
+        constructor(delegate, element) {
+            this.delegate = delegate;
+            this.element = element;
+        }
+        scrollToAnchor(anchor) {
+            const element = this.snapshot.getElementForAnchor(anchor);
+            if (element) {
+                this.scrollToElement(element);
+            }
+            else {
+                this.scrollToPosition({ x: 0, y: 0 });
+            }
+        }
+        scrollToElement(element) {
+            element.scrollIntoView();
+        }
+        scrollToPosition({ x, y }) {
+            this.scrollRoot.scrollTo(x, y);
+        }
+        get scrollRoot() {
+            return window;
+        }
+        async render(renderer) {
+            if (this.renderer) {
+                throw new Error("rendering is already in progress");
+            }
+            const { isPreview, shouldRender, newSnapshot: snapshot } = renderer;
+            if (shouldRender) {
+                try {
+                    this.renderer = renderer;
+                    this.prepareToRenderSnapshot(renderer);
+                    this.delegate.viewWillRenderSnapshot(snapshot, isPreview);
+                    await this.renderSnapshot(renderer);
+                    this.delegate.viewRenderedSnapshot(snapshot, isPreview);
+                    this.finishRenderingSnapshot(renderer);
+                }
+                finally {
+                    delete this.renderer;
+                }
+            }
+            else {
+                this.invalidate();
+            }
+        }
+        invalidate() {
+            this.delegate.viewInvalidated();
+        }
+        prepareToRenderSnapshot(renderer) {
+            this.markAsPreview(renderer.isPreview);
+            renderer.prepareToRender();
+        }
+        markAsPreview(isPreview) {
+            if (isPreview) {
+                this.element.setAttribute("data-turbo-preview", "");
+            }
+            else {
+                this.element.removeAttribute("data-turbo-preview");
+            }
+        }
+        async renderSnapshot(renderer) {
+            await renderer.render();
+        }
+        finishRenderingSnapshot(renderer) {
+            renderer.finishRendering();
+        }
+    }
+
+    class FrameView extends View {
+        invalidate() {
+            this.element.innerHTML = "";
+        }
+        get snapshot() {
+            return new Snapshot(this.element);
+        }
     }
 
     class LinkInterceptor {
@@ -459,48 +710,195 @@ Copyright © 2020 Basecamp, LLC
         }
     }
 
+    class Renderer {
+        constructor(currentSnapshot, newSnapshot, isPreview) {
+            this.currentSnapshot = currentSnapshot;
+            this.newSnapshot = newSnapshot;
+            this.isPreview = isPreview;
+            this.promise = new Promise((resolve, reject) => this.resolvingFunctions = { resolve, reject });
+        }
+        get shouldRender() {
+            return true;
+        }
+        prepareToRender() {
+            return;
+        }
+        finishRendering() {
+            if (this.resolvingFunctions) {
+                this.resolvingFunctions.resolve();
+                delete this.resolvingFunctions;
+            }
+        }
+        createScriptElement(element) {
+            if (element.getAttribute("data-turbo-eval") == "false") {
+                return element;
+            }
+            else {
+                const createdScriptElement = document.createElement("script");
+                createdScriptElement.textContent = element.textContent;
+                createdScriptElement.async = false;
+                copyElementAttributes(createdScriptElement, element);
+                return createdScriptElement;
+            }
+        }
+        get currentElement() {
+            return this.currentSnapshot.element;
+        }
+        get newElement() {
+            return this.newSnapshot.element;
+        }
+    }
+    function copyElementAttributes(destinationElement, sourceElement) {
+        for (const { name, value } of [...sourceElement.attributes]) {
+            destinationElement.setAttribute(name, value);
+        }
+    }
+
+    class FrameRenderer extends Renderer {
+        get shouldRender() {
+            return true;
+        }
+        async render() {
+            await nextAnimationFrame();
+            this.loadFrameElement();
+            this.scrollFrameIntoView();
+            await nextAnimationFrame();
+            this.focusFirstAutofocusableElement();
+        }
+        loadFrameElement() {
+            var _a;
+            const destinationRange = document.createRange();
+            destinationRange.selectNodeContents(this.currentElement);
+            destinationRange.deleteContents();
+            const frameElement = this.newElement;
+            const sourceRange = (_a = frameElement.ownerDocument) === null || _a === void 0 ? void 0 : _a.createRange();
+            if (sourceRange) {
+                sourceRange.selectNodeContents(frameElement);
+                this.currentElement.appendChild(sourceRange.extractContents());
+            }
+        }
+        scrollFrameIntoView() {
+            if (this.currentElement.autoscroll || this.newElement.autoscroll) {
+                const element = this.currentElement.firstElementChild;
+                const block = readScrollLogicalPosition(this.currentElement.getAttribute("data-autoscroll-block"), "end");
+                if (element) {
+                    element.scrollIntoView({ block });
+                    return true;
+                }
+            }
+            return false;
+        }
+        focusFirstAutofocusableElement() {
+            const element = this.firstAutofocusableElement;
+            if (element) {
+                element.focus();
+                return true;
+            }
+            return false;
+        }
+        get id() {
+            return this.currentElement.id;
+        }
+        get firstAutofocusableElement() {
+            const element = this.currentElement.querySelector("[autofocus]");
+            return element instanceof HTMLElement ? element : null;
+        }
+    }
+    function readScrollLogicalPosition(value, defaultValue) {
+        if (value == "end" || value == "start" || value == "center" || value == "nearest") {
+            return value;
+        }
+        else {
+            return defaultValue;
+        }
+    }
+
     class FrameController {
         constructor(element) {
             this.resolveVisitPromise = () => { };
             this.element = element;
+            this.view = new FrameView(this, this.element);
+            this.appearanceObserver = new AppearanceObserver(this, this.element);
             this.linkInterceptor = new LinkInterceptor(this, this.element);
             this.formInterceptor = new FormInterceptor(this, this.element);
         }
         connect() {
+            if (this.loadingStyle == FrameLoadingStyle.lazy) {
+                this.appearanceObserver.start();
+            }
             this.linkInterceptor.start();
             this.formInterceptor.start();
         }
         disconnect() {
+            this.appearanceObserver.stop();
             this.linkInterceptor.stop();
             this.formInterceptor.stop();
+        }
+        sourceURLChanged() {
+            if (this.loadingStyle == FrameLoadingStyle.eager) {
+                this.loadSourceURL();
+            }
+        }
+        loadingStyleChanged() {
+            if (this.loadingStyle == FrameLoadingStyle.lazy) {
+                this.appearanceObserver.start();
+            }
+            else {
+                this.appearanceObserver.stop();
+                this.loadSourceURL();
+            }
+        }
+        async loadSourceURL() {
+            if (this.isActive && this.sourceURL && this.sourceURL != this.loadingURL) {
+                try {
+                    this.loadingURL = this.sourceURL;
+                    this.element.loaded = this.visit(this.sourceURL);
+                    this.appearanceObserver.stop();
+                    await this.element.loaded;
+                }
+                finally {
+                    delete this.loadingURL;
+                }
+            }
+        }
+        async loadResponse(response) {
+            try {
+                const html = await response.responseHTML;
+                if (html) {
+                    const { body } = parseHTMLDocument(html);
+                    const snapshot = new Snapshot(await this.extractForeignFrameElement(body));
+                    const renderer = new FrameRenderer(this.view.snapshot, snapshot, false);
+                    await this.view.render(renderer);
+                }
+            }
+            catch (error) {
+                console.error(error);
+                this.view.invalidate();
+            }
+        }
+        elementAppearedInViewport(element) {
+            this.loadSourceURL();
         }
         shouldInterceptLinkClick(element, url) {
             return this.shouldInterceptNavigation(element);
         }
         linkClickIntercepted(element, url) {
-            const frame = this.findFrameElement(element);
-            frame.src = url;
+            this.navigateFrame(element, url);
         }
         shouldInterceptFormSubmission(element) {
             return this.shouldInterceptNavigation(element);
         }
-        formSubmissionIntercepted(element) {
+        formSubmissionIntercepted(element, submitter) {
             if (this.formSubmission) {
                 this.formSubmission.stop();
             }
-            this.formSubmission = new FormSubmission(this, element);
-            this.formSubmission.start();
-        }
-        async visit(url) {
-            const location = Location.wrap(url);
-            const request = new FetchRequest(this, FetchMethod.get, location);
-            return new Promise(resolve => {
-                this.resolveVisitPromise = () => {
-                    this.resolveVisitPromise = () => { };
-                    resolve();
-                };
-                request.perform();
-            });
+            this.formSubmission = new FormSubmission(this, element, submitter);
+            if (this.formSubmission.fetchRequest.isIdempotent) {
+                this.navigateFrame(element, this.formSubmission.fetchRequest.url.href);
+            }
+            else {
+                this.formSubmission.start();
+            }
         }
         additionalHeadersForRequest(request) {
             return { "Turbo-Frame": this.id };
@@ -530,29 +928,39 @@ Copyright © 2020 Basecamp, LLC
         }
         formSubmissionSucceededWithResponse(formSubmission, response) {
             const frame = this.findFrameElement(formSubmission.formElement);
-            frame.controller.loadResponse(response);
+            frame.delegate.loadResponse(response);
         }
         formSubmissionFailedWithResponse(formSubmission, fetchResponse) {
+            this.element.delegate.loadResponse(fetchResponse);
         }
         formSubmissionErrored(formSubmission, error) {
         }
         formSubmissionFinished(formSubmission) {
         }
+        viewWillRenderSnapshot(snapshot, isPreview) {
+        }
+        viewRenderedSnapshot(snapshot, isPreview) {
+        }
+        viewInvalidated() {
+        }
+        async visit(url) {
+            const request = new FetchRequest(this, FetchMethod.get, expandURL(url));
+            return new Promise(resolve => {
+                this.resolveVisitPromise = () => {
+                    this.resolveVisitPromise = () => { };
+                    resolve();
+                };
+                request.perform();
+            });
+        }
+        navigateFrame(element, url) {
+            const frame = this.findFrameElement(element);
+            frame.src = url;
+        }
         findFrameElement(element) {
             var _a;
             const id = element.getAttribute("data-turbo-frame");
             return (_a = getFrameElementById(id)) !== null && _a !== void 0 ? _a : this.element;
-        }
-        async loadResponse(response) {
-            const fragment = fragmentFromHTML(await response.responseHTML);
-            const element = await this.extractForeignFrameElement(fragment);
-            if (element) {
-                await nextAnimationFrame();
-                this.loadFrameElement(element);
-                this.scrollFrameIntoView(element);
-                await nextAnimationFrame();
-                this.focusFirstAutofocusableElement();
-            }
         }
         async extractForeignFrameElement(container) {
             let element;
@@ -564,36 +972,8 @@ Copyright © 2020 Basecamp, LLC
                 await element.loaded;
                 return await this.extractForeignFrameElement(element);
             }
-        }
-        loadFrameElement(frameElement) {
-            var _a;
-            const destinationRange = document.createRange();
-            destinationRange.selectNodeContents(this.element);
-            destinationRange.deleteContents();
-            const sourceRange = (_a = frameElement.ownerDocument) === null || _a === void 0 ? void 0 : _a.createRange();
-            if (sourceRange) {
-                sourceRange.selectNodeContents(frameElement);
-                this.element.appendChild(sourceRange.extractContents());
-            }
-        }
-        focusFirstAutofocusableElement() {
-            const element = this.firstAutofocusableElement;
-            if (element) {
-                element.focus();
-                return true;
-            }
-            return false;
-        }
-        scrollFrameIntoView(frame) {
-            if (this.element.autoscroll || frame.autoscroll) {
-                const element = this.element.firstElementChild;
-                const block = readScrollLogicalPosition(this.element.getAttribute("data-autoscroll-block"), "end");
-                if (element) {
-                    element.scrollIntoView({ block });
-                    return true;
-                }
-            }
-            return false;
+            console.error(`Response has no matching <turbo-frame id="${id}"> element`);
+            return new FrameElement();
         }
         shouldInterceptNavigation(element) {
             const id = element.getAttribute("data-turbo-frame") || this.element.getAttribute("target");
@@ -608,15 +988,23 @@ Copyright © 2020 Basecamp, LLC
             }
             return true;
         }
-        get firstAutofocusableElement() {
-            const element = this.element.querySelector("[autofocus]");
-            return element instanceof HTMLElement ? element : null;
-        }
         get id() {
             return this.element.id;
         }
         get enabled() {
             return !this.element.disabled;
+        }
+        get sourceURL() {
+            return this.element.src;
+        }
+        get loadingStyle() {
+            return this.element.loading;
+        }
+        get isLoading() {
+            return this.formSubmission !== undefined || this.loadingURL !== undefined;
+        }
+        get isActive() {
+            return this.element.isActive;
         }
     }
     function getFrameElementById(id) {
@@ -627,18 +1015,6 @@ Copyright © 2020 Basecamp, LLC
             }
         }
     }
-    function readScrollLogicalPosition(value, defaultValue) {
-        if (value == "end" || value == "start" || value == "center" || value == "nearest") {
-            return value;
-        }
-        else {
-            return defaultValue;
-        }
-    }
-    function fragmentFromHTML(html = "") {
-        const foreignDocument = document.implementation.createHTMLDocument();
-        return foreignDocument.createRange().createContextualFragment(html);
-    }
     function activateElement(element) {
         if (element && element.ownerDocument !== document) {
             element = document.importNode(element, true);
@@ -647,75 +1023,6 @@ Copyright © 2020 Basecamp, LLC
             return element;
         }
     }
-
-    class FrameElement extends HTMLElement {
-        constructor() {
-            super();
-            this.controller = new FrameController(this);
-        }
-        static get observedAttributes() {
-            return ["src"];
-        }
-        connectedCallback() {
-            this.controller.connect();
-        }
-        disconnectedCallback() {
-            this.controller.disconnect();
-        }
-        attributeChangedCallback() {
-            if (this.src && this.isActive) {
-                const value = this.controller.visit(this.src);
-                Object.defineProperty(this, "loaded", { value, configurable: true });
-            }
-        }
-        formSubmissionIntercepted(element) {
-            this.controller.formSubmissionIntercepted(element);
-        }
-        get src() {
-            return this.getAttribute("src");
-        }
-        set src(value) {
-            if (value) {
-                this.setAttribute("src", value);
-            }
-            else {
-                this.removeAttribute("src");
-            }
-        }
-        get loaded() {
-            return Promise.resolve(undefined);
-        }
-        get disabled() {
-            return this.hasAttribute("disabled");
-        }
-        set disabled(value) {
-            if (value) {
-                this.setAttribute("disabled", "");
-            }
-            else {
-                this.removeAttribute("disabled");
-            }
-        }
-        get autoscroll() {
-            return this.hasAttribute("autoscroll");
-        }
-        set autoscroll(value) {
-            if (value) {
-                this.setAttribute("autoscroll", "");
-            }
-            else {
-                this.removeAttribute("autoscroll");
-            }
-        }
-        get isActive() {
-            return this.ownerDocument === document && !this.isPreview;
-        }
-        get isPreview() {
-            var _a, _b;
-            return (_b = (_a = this.ownerDocument) === null || _a === void 0 ? void 0 : _a.documentElement) === null || _b === void 0 ? void 0 : _b.hasAttribute("data-turbo-preview");
-        }
-    }
-    customElements.define("turbo-frame", FrameElement);
 
     const StreamActions = {
         append() {
@@ -812,6 +1119,9 @@ Copyright © 2020 Basecamp, LLC
             return new CustomEvent("turbo:before-stream-render", { bubbles: true, cancelable: true });
         }
     }
+
+    FrameElement.delegateConstructor = FrameController;
+    customElements.define("turbo-frame", FrameElement);
     customElements.define("turbo-stream", StreamElement);
 
     (() => {
@@ -934,9 +1244,10 @@ Copyright © 2020 Basecamp, LLC
     }
     ProgressBar.animationDuration = 300;
 
-    class HeadDetails {
-        constructor(children) {
-            this.detailsByOuterHTML = children.reduce((result, element) => {
+    class HeadSnapshot extends Snapshot {
+        constructor() {
+            super(...arguments);
+            this.detailsByOuterHTML = this.children.reduce((result, element) => {
                 const { outerHTML } = element;
                 const details = outerHTML in result
                     ? result[outerHTML]
@@ -948,29 +1259,25 @@ Copyright © 2020 Basecamp, LLC
                 return Object.assign(Object.assign({}, result), { [outerHTML]: Object.assign(Object.assign({}, details), { elements: [...details.elements, element] }) });
             }, {});
         }
-        static fromHeadElement(headElement) {
-            const children = headElement ? [...headElement.children] : [];
-            return new this(children);
-        }
-        getTrackedElementSignature() {
+        get trackedElementSignature() {
             return Object.keys(this.detailsByOuterHTML)
                 .filter(outerHTML => this.detailsByOuterHTML[outerHTML].tracked)
                 .join("");
         }
-        getScriptElementsNotInDetails(headDetails) {
-            return this.getElementsMatchingTypeNotInDetails("script", headDetails);
+        getScriptElementsNotInSnapshot(snapshot) {
+            return this.getElementsMatchingTypeNotInSnapshot("script", snapshot);
         }
-        getStylesheetElementsNotInDetails(headDetails) {
-            return this.getElementsMatchingTypeNotInDetails("stylesheet", headDetails);
+        getStylesheetElementsNotInSnapshot(snapshot) {
+            return this.getElementsMatchingTypeNotInSnapshot("stylesheet", snapshot);
         }
-        getElementsMatchingTypeNotInDetails(matchedType, headDetails) {
+        getElementsMatchingTypeNotInSnapshot(matchedType, snapshot) {
             return Object.keys(this.detailsByOuterHTML)
-                .filter(outerHTML => !(outerHTML in headDetails.detailsByOuterHTML))
+                .filter(outerHTML => !(outerHTML in snapshot.detailsByOuterHTML))
                 .map(outerHTML => this.detailsByOuterHTML[outerHTML])
                 .filter(({ type }) => type == matchedType)
                 .map(({ elements: [element] }) => element);
         }
-        getProvisionalElements() {
+        get provisionalElements() {
             return Object.keys(this.detailsByOuterHTML).reduce((result, outerHTML) => {
                 const { type, tracked, elements } = this.detailsByOuterHTML[outerHTML];
                 if (type == null && !tracked) {
@@ -1021,78 +1328,45 @@ Copyright © 2020 Basecamp, LLC
         return tagName == "meta" && element.getAttribute("name") == name;
     }
 
-    class Snapshot {
-        constructor(headDetails, bodyElement) {
-            this.headDetails = headDetails;
-            this.bodyElement = bodyElement;
+    class PageSnapshot extends Snapshot {
+        constructor(element, headSnapshot) {
+            super(element);
+            this.headSnapshot = headSnapshot;
         }
-        static wrap(value) {
-            if (value instanceof this) {
-                return value;
-            }
-            else if (typeof value == "string") {
-                return this.fromHTMLString(value);
-            }
-            else {
-                return this.fromHTMLElement(value);
-            }
+        static fromHTMLString(html = "") {
+            return this.fromDocument(parseHTMLDocument(html));
         }
-        static fromHTMLString(html) {
-            const { documentElement } = new DOMParser().parseFromString(html, "text/html");
-            return this.fromHTMLElement(documentElement);
+        static fromElement(element) {
+            return this.fromDocument(element.ownerDocument);
         }
-        static fromHTMLElement(htmlElement) {
-            const headElement = htmlElement.querySelector("head");
-            const bodyElement = htmlElement.querySelector("body") || document.createElement("body");
-            const headDetails = HeadDetails.fromHeadElement(headElement);
-            return new this(headDetails, bodyElement);
+        static fromDocument({ head, body }) {
+            return new this(body, new HeadSnapshot(head));
         }
         clone() {
-            const { bodyElement } = Snapshot.fromHTMLString(this.bodyElement.outerHTML);
-            return new Snapshot(this.headDetails, bodyElement);
+            return new PageSnapshot(this.element.cloneNode(true), this.headSnapshot);
         }
-        getRootLocation() {
-            const root = this.getSetting("root", "/");
-            return new Location(root);
+        get headElement() {
+            return this.headSnapshot.element;
         }
-        getCacheControlValue() {
+        get rootLocation() {
+            var _a;
+            const root = (_a = this.getSetting("root")) !== null && _a !== void 0 ? _a : "/";
+            return expandURL(root);
+        }
+        get cacheControlValue() {
             return this.getSetting("cache-control");
         }
-        getElementForAnchor(anchor) {
-            try {
-                return this.bodyElement.querySelector(`[id='${anchor}'], a[name='${anchor}']`);
-            }
-            catch (_a) {
-                return null;
-            }
+        get isPreviewable() {
+            return this.cacheControlValue != "no-preview";
         }
-        getPermanentElements() {
-            return [...this.bodyElement.querySelectorAll("[id][data-turbo-permanent]")];
+        get isCacheable() {
+            return this.cacheControlValue != "no-cache";
         }
-        getPermanentElementById(id) {
-            return this.bodyElement.querySelector(`#${id}[data-turbo-permanent]`);
-        }
-        getPermanentElementsPresentInSnapshot(snapshot) {
-            return this.getPermanentElements().filter(({ id }) => snapshot.getPermanentElementById(id));
-        }
-        findFirstAutofocusableElement() {
-            return this.bodyElement.querySelector("[autofocus]");
-        }
-        hasAnchor(anchor) {
-            return this.getElementForAnchor(anchor) != null;
-        }
-        isPreviewable() {
-            return this.getCacheControlValue() != "no-preview";
-        }
-        isCacheable() {
-            return this.getCacheControlValue() != "no-cache";
-        }
-        isVisitable() {
+        get isVisitable() {
             return this.getSetting("visit-control") != "reload";
         }
-        getSetting(name, defaultValue) {
-            const value = this.headDetails.getMetaValue(`turbo-${name}`);
-            return value == null ? defaultValue : value;
+        getSetting(name) {
+            return this.headSnapshot.getMetaValue(`turbo-${name}`);
         }
     }
 
@@ -1125,22 +1399,10 @@ Copyright © 2020 Basecamp, LLC
         constructor(delegate, location, restorationIdentifier, options = {}) {
             this.identifier = uuid();
             this.timingMetrics = {};
-            this.followedRedirect = false;
             this.historyChanged = false;
             this.scrolled = false;
             this.snapshotCached = false;
             this.state = VisitState.initialized;
-            this.performScroll = () => {
-                if (!this.scrolled) {
-                    if (this.action == "restore") {
-                        this.scrollToRestoredPosition() || this.scrollToTop();
-                    }
-                    else {
-                        this.scrollToAnchor() || this.scrollToTop();
-                    }
-                    this.scrolled = true;
-                }
-            };
             this.delegate = delegate;
             this.location = location;
             this.restorationIdentifier = restorationIdentifier || uuid();
@@ -1195,8 +1457,9 @@ Copyright © 2020 Basecamp, LLC
             }
         }
         changeHistory() {
+            var _a;
             if (!this.historyChanged) {
-                const actionForHistory = this.location.isEqualTo(this.referrer) ? "replace" : this.action;
+                const actionForHistory = this.location.href === ((_a = this.referrer) === null || _a === void 0 ? void 0 : _a.href) ? "replace" : this.action;
                 const method = this.getHistoryMethodForAction(actionForHistory);
                 this.history.update(method, this.location, this.restorationIdentifier);
                 this.historyChanged = true;
@@ -1239,17 +1502,17 @@ Copyright © 2020 Basecamp, LLC
             this.adapter.visitRequestFinished(this);
         }
         loadResponse() {
-            if (this.response) {
+            if (this.response && !this.redirectedToLocation) {
                 const { statusCode, responseHTML } = this.response;
-                this.render(() => {
+                this.render(async () => {
                     this.cacheSnapshot();
                     if (isSuccessful(statusCode) && responseHTML != null) {
-                        this.view.render({ snapshot: Snapshot.fromHTMLString(responseHTML) }, this.performScroll);
+                        await this.view.renderPage(PageSnapshot.fromHTMLString(responseHTML));
                         this.adapter.visitRendered(this);
                         this.complete();
                     }
                     else {
-                        this.view.render({ error: responseHTML }, this.performScroll);
+                        await this.view.renderError(PageSnapshot.fromHTMLString(responseHTML));
                         this.adapter.visitRendered(this);
                         this.fail();
                     }
@@ -1258,15 +1521,15 @@ Copyright © 2020 Basecamp, LLC
         }
         getCachedSnapshot() {
             const snapshot = this.view.getCachedSnapshotForLocation(this.location) || this.getPreloadedSnapshot();
-            if (snapshot && (!this.location.anchor || snapshot.hasAnchor(this.location.anchor))) {
-                if (this.action == "restore" || snapshot.isPreviewable()) {
+            if (snapshot && (!getAnchor(this.location) || snapshot.hasAnchor(getAnchor(this.location)))) {
+                if (this.action == "restore" || snapshot.isPreviewable) {
                     return snapshot;
                 }
             }
         }
         getPreloadedSnapshot() {
             if (this.snapshotHTML) {
-                return Snapshot.wrap(this.snapshotHTML);
+                return PageSnapshot.fromHTMLString(this.snapshotHTML);
             }
         }
         hasCachedSnapshot() {
@@ -1276,21 +1539,14 @@ Copyright © 2020 Basecamp, LLC
             const snapshot = this.getCachedSnapshot();
             if (snapshot) {
                 const isPreview = this.shouldIssueRequest();
-                this.render(() => {
+                this.render(async () => {
                     this.cacheSnapshot();
-                    this.view.render({ snapshot, isPreview }, this.performScroll);
+                    await this.view.renderPage(snapshot);
                     this.adapter.visitRendered(this);
                     if (!isPreview) {
                         this.complete();
                     }
                 });
-            }
-        }
-        followRedirect() {
-            if (this.redirectedToLocation && !this.followedRedirect) {
-                this.location = this.redirectedToLocation;
-                this.history.replace(this.redirectedToLocation, this.restorationIdentifier);
-                this.followedRedirect = true;
             }
         }
         requestStarted() {
@@ -1323,6 +1579,17 @@ Copyright © 2020 Basecamp, LLC
         requestFinished() {
             this.finishRequest();
         }
+        performScroll() {
+            if (!this.scrolled) {
+                if (this.action == "restore") {
+                    this.scrollToRestoredPosition() || this.scrollToTop();
+                }
+                else {
+                    this.scrollToAnchor() || this.scrollToTop();
+                }
+                this.scrolled = true;
+            }
+        }
         scrollToRestoredPosition() {
             const { scrollPosition } = this.restorationData;
             if (scrollPosition) {
@@ -1331,8 +1598,8 @@ Copyright © 2020 Basecamp, LLC
             }
         }
         scrollToAnchor() {
-            if (this.location.anchor != null) {
-                this.view.scrollToAnchor(this.location.anchor);
+            if (getAnchor(this.location) != null) {
+                this.view.scrollToAnchor(getAnchor(this.location));
                 return true;
             }
         }
@@ -1366,12 +1633,14 @@ Copyright © 2020 Basecamp, LLC
                 this.snapshotCached = true;
             }
         }
-        render(callback) {
+        async render(callback) {
             this.cancelRender();
-            this.frame = requestAnimationFrame(() => {
-                delete this.frame;
-                callback.call(this);
+            await new Promise(resolve => {
+                this.frame = requestAnimationFrame(() => resolve());
             });
+            callback();
+            delete this.frame;
+            this.performScroll();
         }
         cancelRender() {
             if (this.frame) {
@@ -1427,7 +1696,6 @@ Copyright © 2020 Basecamp, LLC
             this.hideProgressBar();
         }
         visitCompleted(visit) {
-            visit.followRedirect();
         }
         pageInvalidated() {
             this.reload();
@@ -1461,17 +1729,19 @@ Copyright © 2020 Basecamp, LLC
                 removeEventListener("submit", this.submitBubbled, false);
                 addEventListener("submit", this.submitBubbled, false);
             };
-            this.submitBubbled = (event) => {
+            this.submitBubbled = ((event) => {
                 if (!event.defaultPrevented) {
                     const form = event.target instanceof HTMLFormElement ? event.target : undefined;
+                    const submitter = event.submitter || undefined;
                     if (form) {
-                        if (this.delegate.willSubmitForm(form)) {
+                        const method = (submitter === null || submitter === void 0 ? void 0 : submitter.getAttribute("formmethod")) || form.method;
+                        if (method != "dialog" && this.delegate.willSubmitForm(form, submitter)) {
                             event.preventDefault();
-                            this.delegate.formSubmitted(form);
+                            this.delegate.formSubmitted(form, submitter);
                         }
                     }
                 }
-            };
+            });
             this.delegate = delegate;
         }
         start() {
@@ -1511,16 +1781,16 @@ Copyright © 2020 Basecamp, LLC
                 frame.src = url;
             }
         }
-        shouldInterceptFormSubmission(element) {
-            return this.shouldRedirect(element);
+        shouldInterceptFormSubmission(element, submitter) {
+            return this.shouldRedirect(element, submitter);
         }
-        formSubmissionIntercepted(element) {
+        formSubmissionIntercepted(element, submitter) {
             const frame = this.findFrameElement(element);
             if (frame) {
-                frame.formSubmissionIntercepted(element);
+                frame.delegate.formSubmissionIntercepted(element, submitter);
             }
         }
-        shouldRedirect(element) {
+        shouldRedirect(element, submitter) {
             const frame = this.findFrameElement(element);
             return frame ? frame != element.closest("turbo-frame") : false;
         }
@@ -1545,11 +1815,10 @@ Copyright © 2020 Basecamp, LLC
                 if (this.shouldHandlePopState()) {
                     const { turbo } = event.state || {};
                     if (turbo) {
-                        const location = Location.currentLocation;
-                        this.location = location;
+                        this.location = new URL(window.location.href);
                         const { restorationIdentifier } = turbo;
                         this.restorationIdentifier = restorationIdentifier;
-                        this.delegate.historyPoppedToLocationWithRestorationIdentifier(location, restorationIdentifier);
+                        this.delegate.historyPoppedToLocationWithRestorationIdentifier(this.location, restorationIdentifier);
                     }
                 }
             };
@@ -1561,18 +1830,14 @@ Copyright © 2020 Basecamp, LLC
         }
         start() {
             if (!this.started) {
-                this.previousScrollRestoration = history.scrollRestoration;
-                history.scrollRestoration = "manual";
                 addEventListener("popstate", this.onPopState, false);
                 addEventListener("load", this.onPageLoad, false);
                 this.started = true;
-                this.replace(Location.currentLocation);
+                this.replace(new URL(window.location.href));
             }
         }
         stop() {
-            var _a;
             if (this.started) {
-                history.scrollRestoration = (_a = this.previousScrollRestoration) !== null && _a !== void 0 ? _a : "auto";
                 removeEventListener("popstate", this.onPopState, false);
                 removeEventListener("load", this.onPageLoad, false);
                 this.started = false;
@@ -1586,7 +1851,7 @@ Copyright © 2020 Basecamp, LLC
         }
         update(method, location, restorationIdentifier = uuid()) {
             const state = { turbo: { restorationIdentifier } };
-            method.call(history, state, "", location.absoluteURL);
+            method.call(history, state, "", location.href);
             this.location = location;
             this.restorationIdentifier = restorationIdentifier;
         }
@@ -1597,6 +1862,19 @@ Copyright © 2020 Basecamp, LLC
             const { restorationIdentifier } = this;
             const restorationData = this.restorationData[restorationIdentifier];
             this.restorationData[restorationIdentifier] = Object.assign(Object.assign({}, restorationData), additionalData);
+        }
+        assumeControlOfScrollRestoration() {
+            var _a;
+            if (!this.previousScrollRestoration) {
+                this.previousScrollRestoration = (_a = history.scrollRestoration) !== null && _a !== void 0 ? _a : "auto";
+                history.scrollRestoration = "manual";
+            }
+        }
+        relinquishControlOfScrollRestoration() {
+            if (this.previousScrollRestoration) {
+                history.scrollRestoration = this.previousScrollRestoration;
+                delete this.previousScrollRestoration;
+            }
         }
         shouldHandlePopState() {
             return this.pageIsLoaded();
@@ -1654,7 +1932,7 @@ Copyright © 2020 Basecamp, LLC
             }
         }
         getLocationForLink(link) {
-            return new Location(link.getAttribute("href") || "");
+            return expandURL(link.getAttribute("href") || "");
         }
     }
 
@@ -1667,14 +1945,14 @@ Copyright © 2020 Basecamp, LLC
                 this.delegate.visitProposedToLocation(location, options);
             }
         }
-        startVisit(location, restorationIdentifier, options = {}) {
+        startVisit(locatable, restorationIdentifier, options = {}) {
             this.stop();
-            this.currentVisit = new Visit(this, Location.wrap(location), restorationIdentifier, Object.assign({ referrer: this.location }, options));
+            this.currentVisit = new Visit(this, expandURL(locatable), restorationIdentifier, Object.assign({ referrer: this.location }, options));
             this.currentVisit.start();
         }
-        submitForm(form) {
+        submitForm(form, submitter) {
             this.stop();
-            this.formSubmission = new FormSubmission(this, form, true);
+            this.formSubmission = new FormSubmission(this, form, submitter, true);
             this.formSubmission.start();
         }
         stop() {
@@ -1699,26 +1977,27 @@ Copyright © 2020 Basecamp, LLC
         formSubmissionStarted(formSubmission) {
         }
         async formSubmissionSucceededWithResponse(formSubmission, fetchResponse) {
-            console.log("Form submission succeeded", formSubmission);
             if (formSubmission == this.formSubmission) {
                 const responseHTML = await fetchResponse.responseHTML;
                 if (responseHTML) {
                     if (formSubmission.method != FetchMethod.get) {
-                        console.log("Clearing snapshot cache after successful form submission");
                         this.view.clearSnapshotCache();
                     }
                     const { statusCode } = fetchResponse;
                     const visitOptions = { response: { statusCode, responseHTML } };
-                    console.log("Visiting", fetchResponse.location, visitOptions);
                     this.proposeVisit(fetchResponse.location, visitOptions);
                 }
             }
         }
-        formSubmissionFailedWithResponse(formSubmission, fetchResponse) {
-            console.error("Form submission failed", formSubmission, fetchResponse);
+        async formSubmissionFailedWithResponse(formSubmission, fetchResponse) {
+            const responseHTML = await fetchResponse.responseHTML;
+            if (responseHTML) {
+                const snapshot = PageSnapshot.fromHTMLString(responseHTML);
+                await this.view.renderPage(snapshot);
+                this.view.clearSnapshotCache();
+            }
         }
         formSubmissionErrored(formSubmission, error) {
-            console.error("Form submission failed", formSubmission, error);
         }
         formSubmissionFinished(formSubmission) {
         }
@@ -1727,6 +2006,13 @@ Copyright © 2020 Basecamp, LLC
         }
         visitCompleted(visit) {
             this.delegate.visitCompleted(visit);
+            this.followRedirectedResponse(visit);
+        }
+        followRedirectedResponse(visit) {
+            const { redirectedToLocation, response, restorationIdentifier } = visit;
+            if (redirectedToLocation && response) {
+                this.startVisit(redirectedToLocation, restorationIdentifier, { action: "replace", response });
+            }
         }
         get location() {
             return this.history.location;
@@ -1742,7 +2028,6 @@ Copyright © 2020 Basecamp, LLC
         PageStage[PageStage["loading"] = 1] = "loading";
         PageStage[PageStage["interactive"] = 2] = "interactive";
         PageStage[PageStage["complete"] = 3] = "complete";
-        PageStage[PageStage["invalidated"] = 4] = "invalidated";
     })(PageStage || (PageStage = {}));
     class PageObserver {
         constructor(delegate) {
@@ -1757,6 +2042,9 @@ Copyright © 2020 Basecamp, LLC
                     this.pageIsComplete();
                 }
             };
+            this.pageWillUnload = () => {
+                this.delegate.pageWillUnload();
+            };
             this.delegate = delegate;
         }
         start() {
@@ -1765,19 +2053,15 @@ Copyright © 2020 Basecamp, LLC
                     this.stage = PageStage.loading;
                 }
                 document.addEventListener("readystatechange", this.interpretReadyState, false);
+                addEventListener("pagehide", this.pageWillUnload, false);
                 this.started = true;
             }
         }
         stop() {
             if (this.started) {
                 document.removeEventListener("readystatechange", this.interpretReadyState, false);
+                removeEventListener("pagehide", this.pageWillUnload, false);
                 this.started = false;
-            }
-        }
-        invalidate() {
-            if (this.stage != PageStage.invalidated) {
-                this.stage = PageStage.invalidated;
-                this.delegate.pageInvalidated();
             }
         }
         pageIsInteractive() {
@@ -1858,27 +2142,26 @@ Copyright © 2020 Basecamp, LLC
             return Array.from(this.templateElement.content.children);
         }
     }
-    StreamMessage.contentType = "text/html; turbo-stream";
 
     class StreamObserver {
         constructor(delegate) {
             this.sources = new Set;
             this.started = false;
-            this.prepareFetchRequest = (event) => {
+            this.prepareFetchRequest = ((event) => {
                 var _a;
-                const fetchOptions = (_a = event.data) === null || _a === void 0 ? void 0 : _a.fetchOptions;
+                const fetchOptions = (_a = event.detail) === null || _a === void 0 ? void 0 : _a.fetchOptions;
                 if (fetchOptions) {
                     const { headers } = fetchOptions;
-                    headers.Accept = [StreamMessage.contentType, headers.Accept].join(", ");
+                    headers.Accept = ["text/vnd.turbo-stream.html", headers.Accept].join(", ");
                 }
-            };
-            this.inspectFetchResponse = (event) => {
-                const fetchResponse = fetchResponseFromEvent(event);
-                if ((fetchResponse === null || fetchResponse === void 0 ? void 0 : fetchResponse.contentType) == StreamMessage.contentType + "; charset=utf-8") {
+            });
+            this.inspectFetchResponse = ((event) => {
+                const response = fetchResponseFromEvent(event);
+                if (response && fetchResponseIsStream(response)) {
                     event.preventDefault();
-                    this.receiveMessageResponse(fetchResponse);
+                    this.receiveMessageResponse(response);
                 }
-            };
+            });
             this.receiveMessageEvent = (event) => {
                 if (this.started && typeof event.data == "string") {
                     this.receiveMessageHTML(event.data);
@@ -1927,72 +2210,33 @@ Copyright © 2020 Basecamp, LLC
     }
     function fetchResponseFromEvent(event) {
         var _a;
-        if (((_a = event.data) === null || _a === void 0 ? void 0 : _a.fetchResponse) instanceof FetchResponse) {
-            return event.data.fetchResponse;
+        const fetchResponse = (_a = event.detail) === null || _a === void 0 ? void 0 : _a.fetchResponse;
+        if (fetchResponse instanceof FetchResponse) {
+            return fetchResponse;
         }
+    }
+    function fetchResponseIsStream(response) {
+        var _a;
+        const contentType = (_a = response.contentType) !== null && _a !== void 0 ? _a : "";
+        return /^text\/vnd\.turbo-stream\.html\b/.test(contentType);
     }
 
     function isAction(action) {
         return action == "advance" || action == "replace" || action == "restore";
     }
 
-    class Renderer {
-        renderView(callback) {
-            this.delegate.viewWillRender(this.newBody);
-            callback();
-            this.delegate.viewRendered(this.newBody);
-        }
-        invalidateView() {
-            this.delegate.viewInvalidated();
-        }
-        createScriptElement(element) {
-            if (element.getAttribute("data-turbo-eval") == "false") {
-                return element;
-            }
-            else {
-                const createdScriptElement = document.createElement("script");
-                createdScriptElement.textContent = element.textContent;
-                createdScriptElement.async = false;
-                copyElementAttributes(createdScriptElement, element);
-                return createdScriptElement;
-            }
-        }
-    }
-    function copyElementAttributes(destinationElement, sourceElement) {
-        for (const { name, value } of [...sourceElement.attributes]) {
-            destinationElement.setAttribute(name, value);
-        }
-    }
-
     class ErrorRenderer extends Renderer {
-        constructor(delegate, html) {
-            super();
-            this.delegate = delegate;
-            this.htmlElement = (() => {
-                const htmlElement = document.createElement("html");
-                htmlElement.innerHTML = html;
-                return htmlElement;
-            })();
-            this.newHead = this.htmlElement.querySelector("head") || document.createElement("head");
-            this.newBody = this.htmlElement.querySelector("body") || document.createElement("body");
-        }
-        static render(delegate, callback, html) {
-            return new this(delegate, html).render(callback);
-        }
-        render(callback) {
-            this.renderView(() => {
-                this.replaceHeadAndBody();
-                this.activateBodyScriptElements();
-                callback();
-            });
+        async render() {
+            this.replaceHeadAndBody();
+            this.activateScriptElements();
         }
         replaceHeadAndBody() {
             const { documentElement, head, body } = document;
             documentElement.replaceChild(this.newHead, head);
-            documentElement.replaceChild(this.newBody, body);
+            documentElement.replaceChild(this.newElement, body);
         }
-        activateBodyScriptElements() {
-            for (const replaceableElement of this.getScriptElements()) {
+        activateScriptElements() {
+            for (const replaceableElement of this.scriptElements) {
                 const parentNode = replaceableElement.parentNode;
                 if (parentNode) {
                     const element = this.createScriptElement(replaceableElement);
@@ -2000,84 +2244,38 @@ Copyright © 2020 Basecamp, LLC
                 }
             }
         }
-        getScriptElements() {
+        get newHead() {
+            return this.newSnapshot.headSnapshot.element;
+        }
+        get scriptElements() {
             return [...document.documentElement.querySelectorAll("script")];
         }
     }
 
-    class SnapshotCache {
-        constructor(size) {
-            this.keys = [];
-            this.snapshots = {};
-            this.size = size;
+    class PageRenderer extends Renderer {
+        get shouldRender() {
+            return this.newSnapshot.isVisitable && this.trackedElementsAreIdentical;
         }
-        has(location) {
-            return location.toCacheKey() in this.snapshots;
+        prepareToRender() {
+            this.mergeHead();
         }
-        get(location) {
-            if (this.has(location)) {
-                const snapshot = this.read(location);
-                this.touch(location);
-                return snapshot;
+        async render() {
+            this.replaceBody();
+        }
+        finishRendering() {
+            super.finishRendering();
+            if (this.isPreview) {
+                this.focusFirstAutofocusableElement();
             }
         }
-        put(location, snapshot) {
-            this.write(location, snapshot);
-            this.touch(location);
-            return snapshot;
+        get currentHeadSnapshot() {
+            return this.currentSnapshot.headSnapshot;
         }
-        clear() {
-            this.snapshots = {};
+        get newHeadSnapshot() {
+            return this.newSnapshot.headSnapshot;
         }
-        read(location) {
-            return this.snapshots[location.toCacheKey()];
-        }
-        write(location, snapshot) {
-            this.snapshots[location.toCacheKey()] = snapshot;
-        }
-        touch(location) {
-            const key = location.toCacheKey();
-            const index = this.keys.indexOf(key);
-            if (index > -1)
-                this.keys.splice(index, 1);
-            this.keys.unshift(key);
-            this.trim();
-        }
-        trim() {
-            for (const key of this.keys.splice(this.size)) {
-                delete this.snapshots[key];
-            }
-        }
-    }
-
-    class SnapshotRenderer extends Renderer {
-        constructor(delegate, currentSnapshot, newSnapshot, isPreview) {
-            super();
-            this.delegate = delegate;
-            this.currentSnapshot = currentSnapshot;
-            this.currentHeadDetails = currentSnapshot.headDetails;
-            this.newSnapshot = newSnapshot;
-            this.newHeadDetails = newSnapshot.headDetails;
-            this.newBody = newSnapshot.bodyElement;
-            this.isPreview = isPreview;
-        }
-        static render(delegate, callback, currentSnapshot, newSnapshot, isPreview) {
-            return new this(delegate, currentSnapshot, newSnapshot, isPreview).render(callback);
-        }
-        render(callback) {
-            if (this.shouldRender()) {
-                this.mergeHead();
-                this.renderView(() => {
-                    this.replaceBody();
-                    if (!this.isPreview) {
-                        this.focusFirstAutofocusableElement();
-                    }
-                    callback();
-                });
-            }
-            else {
-                this.invalidateView();
-            }
+        get newElement() {
+            return this.newSnapshot.element;
         }
         mergeHead() {
             this.copyNewHeadStylesheetElements();
@@ -2091,34 +2289,31 @@ Copyright © 2020 Basecamp, LLC
             this.assignNewBody();
             this.replacePlaceholderElementsWithClonedPermanentElements(placeholders);
         }
-        shouldRender() {
-            return this.newSnapshot.isVisitable() && this.trackedElementsAreIdentical();
-        }
-        trackedElementsAreIdentical() {
-            return this.currentHeadDetails.getTrackedElementSignature() == this.newHeadDetails.getTrackedElementSignature();
+        get trackedElementsAreIdentical() {
+            return this.currentHeadSnapshot.trackedElementSignature == this.newHeadSnapshot.trackedElementSignature;
         }
         copyNewHeadStylesheetElements() {
-            for (const element of this.getNewHeadStylesheetElements()) {
+            for (const element of this.newHeadStylesheetElements) {
                 document.head.appendChild(element);
             }
         }
         copyNewHeadScriptElements() {
-            for (const element of this.getNewHeadScriptElements()) {
+            for (const element of this.newHeadScriptElements) {
                 document.head.appendChild(this.createScriptElement(element));
             }
         }
         removeCurrentHeadProvisionalElements() {
-            for (const element of this.getCurrentHeadProvisionalElements()) {
+            for (const element of this.currentHeadProvisionalElements) {
                 document.head.removeChild(element);
             }
         }
         copyNewHeadProvisionalElements() {
-            for (const element of this.getNewHeadProvisionalElements()) {
+            for (const element of this.newHeadProvisionalElements) {
                 document.head.appendChild(element);
             }
         }
         relocateCurrentBodyPermanentElements() {
-            return this.getCurrentBodyPermanentElements().reduce((placeholders, permanentElement) => {
+            return this.currentBodyPermanentElements.reduce((placeholders, permanentElement) => {
                 const newElement = this.newSnapshot.getPermanentElementById(permanentElement.id);
                 if (newElement) {
                     const placeholder = createPlaceholderForPermanentElement(permanentElement);
@@ -2138,46 +2333,46 @@ Copyright © 2020 Basecamp, LLC
             }
         }
         activateNewBody() {
-            document.adoptNode(this.newBody);
+            document.adoptNode(this.newElement);
             this.activateNewBodyScriptElements();
         }
         activateNewBodyScriptElements() {
-            for (const inertScriptElement of this.getNewBodyScriptElements()) {
+            for (const inertScriptElement of this.newBodyScriptElements) {
                 const activatedScriptElement = this.createScriptElement(inertScriptElement);
                 replaceElementWithElement(inertScriptElement, activatedScriptElement);
             }
         }
         assignNewBody() {
-            if (document.body) {
-                replaceElementWithElement(document.body, this.newBody);
+            if (document.body && this.newElement instanceof HTMLBodyElement) {
+                replaceElementWithElement(document.body, this.newElement);
             }
             else {
-                document.documentElement.appendChild(this.newBody);
+                document.documentElement.appendChild(this.newElement);
             }
         }
         focusFirstAutofocusableElement() {
-            const element = this.newSnapshot.findFirstAutofocusableElement();
+            const element = this.newSnapshot.firstAutofocusableElement;
             if (elementIsFocusable(element)) {
                 element.focus();
             }
         }
-        getNewHeadStylesheetElements() {
-            return this.newHeadDetails.getStylesheetElementsNotInDetails(this.currentHeadDetails);
+        get newHeadStylesheetElements() {
+            return this.newHeadSnapshot.getStylesheetElementsNotInSnapshot(this.currentHeadSnapshot);
         }
-        getNewHeadScriptElements() {
-            return this.newHeadDetails.getScriptElementsNotInDetails(this.currentHeadDetails);
+        get newHeadScriptElements() {
+            return this.newHeadSnapshot.getScriptElementsNotInSnapshot(this.currentHeadSnapshot);
         }
-        getCurrentHeadProvisionalElements() {
-            return this.currentHeadDetails.getProvisionalElements();
+        get currentHeadProvisionalElements() {
+            return this.currentHeadSnapshot.provisionalElements;
         }
-        getNewHeadProvisionalElements() {
-            return this.newHeadDetails.getProvisionalElements();
+        get newHeadProvisionalElements() {
+            return this.newHeadSnapshot.provisionalElements;
         }
-        getCurrentBodyPermanentElements() {
+        get currentBodyPermanentElements() {
             return this.currentSnapshot.getPermanentElementsPresentInSnapshot(this.newSnapshot);
         }
-        getNewBodyScriptElements() {
-            return [...this.newBody.querySelectorAll("script")];
+        get newBodyScriptElements() {
+            return [...this.newElement.querySelectorAll("script")];
         }
     }
     function createPlaceholderForPermanentElement(permanentElement) {
@@ -2196,32 +2391,72 @@ Copyright © 2020 Basecamp, LLC
         return element && typeof element.focus == "function";
     }
 
-    class View {
-        constructor(delegate) {
-            this.htmlElement = document.documentElement;
+    class SnapshotCache {
+        constructor(size) {
+            this.keys = [];
+            this.snapshots = {};
+            this.size = size;
+        }
+        has(location) {
+            return toCacheKey(location) in this.snapshots;
+        }
+        get(location) {
+            if (this.has(location)) {
+                const snapshot = this.read(location);
+                this.touch(location);
+                return snapshot;
+            }
+        }
+        put(location, snapshot) {
+            this.write(location, snapshot);
+            this.touch(location);
+            return snapshot;
+        }
+        clear() {
+            this.snapshots = {};
+        }
+        read(location) {
+            return this.snapshots[toCacheKey(location)];
+        }
+        write(location, snapshot) {
+            this.snapshots[toCacheKey(location)] = snapshot;
+        }
+        touch(location) {
+            const key = toCacheKey(location);
+            const index = this.keys.indexOf(key);
+            if (index > -1)
+                this.keys.splice(index, 1);
+            this.keys.unshift(key);
+            this.trim();
+        }
+        trim() {
+            for (const key of this.keys.splice(this.size)) {
+                delete this.snapshots[key];
+            }
+        }
+    }
+
+    class PageView extends View {
+        constructor() {
+            super(...arguments);
             this.snapshotCache = new SnapshotCache(10);
-            this.delegate = delegate;
+            this.lastRenderedLocation = new URL(location.href);
         }
-        getRootLocation() {
-            return this.getSnapshot().getRootLocation();
+        renderPage(snapshot, isPreview = false) {
+            const renderer = new PageRenderer(this.snapshot, snapshot, isPreview);
+            return this.render(renderer);
         }
-        getElementForAnchor(anchor) {
-            return this.getSnapshot().getElementForAnchor(anchor);
-        }
-        getSnapshot() {
-            return Snapshot.fromHTMLElement(this.htmlElement);
+        renderError(snapshot) {
+            const renderer = new ErrorRenderer(this.snapshot, snapshot, false);
+            this.render(renderer);
         }
         clearSnapshotCache() {
             this.snapshotCache.clear();
         }
-        shouldCacheSnapshot() {
-            return this.getSnapshot().isCacheable();
-        }
         async cacheSnapshot() {
-            if (this.shouldCacheSnapshot()) {
+            if (this.shouldCacheSnapshot) {
                 this.delegate.viewWillCacheSnapshot();
-                const snapshot = this.getSnapshot();
-                const location = this.lastRenderedLocation || Location.currentLocation;
+                const { snapshot, lastRenderedLocation: location } = this;
                 await nextMicrotask();
                 this.snapshotCache.put(location, snapshot.clone());
             }
@@ -2229,43 +2464,11 @@ Copyright © 2020 Basecamp, LLC
         getCachedSnapshotForLocation(location) {
             return this.snapshotCache.get(location);
         }
-        render({ snapshot, error, isPreview }, callback) {
-            this.markAsPreview(isPreview);
-            if (snapshot) {
-                this.renderSnapshot(snapshot, isPreview, callback);
-            }
-            else {
-                this.renderError(error, callback);
-            }
+        get snapshot() {
+            return PageSnapshot.fromElement(this.element);
         }
-        scrollToAnchor(anchor) {
-            const element = this.getElementForAnchor(anchor);
-            if (element) {
-                this.scrollToElement(element);
-            }
-            else {
-                this.scrollToPosition({ x: 0, y: 0 });
-            }
-        }
-        scrollToElement(element) {
-            element.scrollIntoView();
-        }
-        scrollToPosition({ x, y }) {
-            window.scrollTo(x, y);
-        }
-        markAsPreview(isPreview) {
-            if (isPreview) {
-                this.htmlElement.setAttribute("data-turbo-preview", "");
-            }
-            else {
-                this.htmlElement.removeAttribute("data-turbo-preview");
-            }
-        }
-        renderSnapshot(snapshot, isPreview, callback) {
-            SnapshotRenderer.render(this.delegate, callback, this.getSnapshot(), snapshot, isPreview || false);
-        }
-        renderError(error, callback) {
-            ErrorRenderer.render(this.delegate, callback, error || "");
+        get shouldCacheSnapshot() {
+            return this.snapshot.isCacheable;
         }
     }
 
@@ -2273,7 +2476,7 @@ Copyright © 2020 Basecamp, LLC
         constructor() {
             this.navigator = new Navigator(this);
             this.history = new History(this);
-            this.view = new View(this);
+            this.view = new PageView(this, document.documentElement);
             this.adapter = new BrowserAdapter(this);
             this.pageObserver = new PageObserver(this);
             this.linkClickObserver = new LinkClickObserver(this);
@@ -2317,7 +2520,7 @@ Copyright © 2020 Basecamp, LLC
             this.adapter = adapter;
         }
         visit(location, options = {}) {
-            this.navigator.proposeVisit(Location.wrap(location), options);
+            this.navigator.proposeVisit(expandURL(location), options);
         }
         connectStreamSource(source) {
             this.streamObserver.connectStreamSource(source);
@@ -2352,56 +2555,59 @@ Copyright © 2020 Basecamp, LLC
             this.history.updateRestorationData({ scrollPosition: position });
         }
         willFollowLinkToLocation(link, location) {
-            return this.linkIsVisitable(link)
+            return this.elementIsNavigable(link)
                 && this.locationIsVisitable(location)
                 && this.applicationAllowsFollowingLinkToLocation(link, location);
         }
         followedLinkToLocation(link, location) {
             const action = this.getActionForLink(link);
-            this.visit(location, { action });
+            this.visit(location.href, { action });
         }
         allowsVisitingLocation(location) {
             return this.applicationAllowsVisitingLocation(location);
         }
         visitProposedToLocation(location, options) {
+            extendURLWithDeprecatedProperties(location);
             this.adapter.visitProposedToLocation(location, options);
         }
         visitStarted(visit) {
+            extendURLWithDeprecatedProperties(visit.location);
             this.notifyApplicationAfterVisitingLocation(visit.location);
         }
         visitCompleted(visit) {
             this.notifyApplicationAfterPageLoad(visit.getTimingMetrics());
         }
-        willSubmitForm(form) {
-            return true;
+        willSubmitForm(form, submitter) {
+            return this.elementIsNavigable(form) && this.elementIsNavigable(submitter);
         }
-        formSubmitted(form) {
-            this.navigator.submitForm(form);
+        formSubmitted(form, submitter) {
+            this.navigator.submitForm(form, submitter);
         }
         pageBecameInteractive() {
             this.view.lastRenderedLocation = this.location;
             this.notifyApplicationAfterPageLoad();
         }
         pageLoaded() {
+            this.history.assumeControlOfScrollRestoration();
         }
-        pageInvalidated() {
-            this.adapter.pageInvalidated();
+        pageWillUnload() {
+            this.history.relinquishControlOfScrollRestoration();
         }
         receivedMessageFromStream(message) {
             this.renderStreamMessage(message);
         }
-        viewWillRender(newBody) {
-            this.notifyApplicationBeforeRender(newBody);
+        viewWillCacheSnapshot() {
+            this.notifyApplicationBeforeCachingSnapshot();
         }
-        viewRendered() {
+        viewWillRenderSnapshot({ element }, isPreview) {
+            this.notifyApplicationBeforeRender(element);
+        }
+        viewRenderedSnapshot(snapshot, isPreview) {
             this.view.lastRenderedLocation = this.history.location;
             this.notifyApplicationAfterRender();
         }
         viewInvalidated() {
-            this.pageObserver.invalidate();
-        }
-        viewWillCacheSnapshot() {
-            this.notifyApplicationBeforeCachingSnapshot();
+            this.adapter.pageInvalidated();
         }
         applicationAllowsFollowingLinkToLocation(link, location) {
             const event = this.notifyApplicationAfterClickingLinkToLocation(link, location);
@@ -2412,13 +2618,13 @@ Copyright © 2020 Basecamp, LLC
             return !event.defaultPrevented;
         }
         notifyApplicationAfterClickingLinkToLocation(link, location) {
-            return dispatch("turbo:click", { target: link, detail: { url: location.absoluteURL }, cancelable: true });
+            return dispatch("turbo:click", { target: link, detail: { url: location.href }, cancelable: true });
         }
         notifyApplicationBeforeVisitingLocation(location) {
-            return dispatch("turbo:before-visit", { detail: { url: location.absoluteURL }, cancelable: true });
+            return dispatch("turbo:before-visit", { detail: { url: location.href }, cancelable: true });
         }
         notifyApplicationAfterVisitingLocation(location) {
-            return dispatch("turbo:visit", { detail: { url: location.absoluteURL } });
+            return dispatch("turbo:visit", { detail: { url: location.href } });
         }
         notifyApplicationBeforeCachingSnapshot() {
             return dispatch("turbo:before-cache");
@@ -2430,14 +2636,14 @@ Copyright © 2020 Basecamp, LLC
             return dispatch("turbo:render");
         }
         notifyApplicationAfterPageLoad(timing = {}) {
-            return dispatch("turbo:load", { detail: { url: this.location.absoluteURL, timing } });
+            return dispatch("turbo:load", { detail: { url: this.location.href, timing } });
         }
         getActionForLink(link) {
             const action = link.getAttribute("data-turbo-action");
             return isAction(action) ? action : "advance";
         }
-        linkIsVisitable(link) {
-            const container = link.closest("[data-turbo]");
+        elementIsNavigable(element) {
+            const container = element === null || element === void 0 ? void 0 : element.closest("[data-turbo]");
             if (container) {
                 return container.getAttribute("data-turbo") != "false";
             }
@@ -2446,9 +2652,22 @@ Copyright © 2020 Basecamp, LLC
             }
         }
         locationIsVisitable(location) {
-            return location.isPrefixedBy(this.view.getRootLocation()) && location.isHTML();
+            return isPrefixedBy(location, this.snapshot.rootLocation) && isHTML(location);
+        }
+        get snapshot() {
+            return this.view.snapshot;
         }
     }
+    function extendURLWithDeprecatedProperties(url) {
+        Object.defineProperties(url, deprecatedLocationPropertyDescriptors);
+    }
+    const deprecatedLocationPropertyDescriptors = {
+        absoluteURL: {
+            get() {
+                return this.toString();
+            }
+        }
+    };
 
     const session = new Session;
     const { navigator } = session;
