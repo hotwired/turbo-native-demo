@@ -11,6 +11,7 @@ const PORT = process.env.PORT || 45678
 
 app.set("view engine", "ejs")
 app.use(express.static("public"))
+app.use('/dist', express.static(__dirname + '/node_modules/@hotwired/turbo/dist/'));
 app.use(cookieParser())
 app.use(layouts)
 
