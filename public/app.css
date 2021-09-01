@@ -146,6 +146,11 @@ body:not(.index) .page-title {
   mask: url("/images/external.svg") center/100% no-repeat;
 }
 
+.actions__icon.--redirect {
+  -webkit-mask: url("/images/redirect.svg") center/100% no-repeat;
+  mask: url("/images/redirect.svg") center/100% no-repeat;
+}
+
 .actions__icon.--files {
   -webkit-mask: url("/images/files.svg") center/100% no-repeat;
   mask: url("/images/files.svg") center/100% no-repeat;
