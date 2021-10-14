@@ -4,7 +4,7 @@
   <label for="name" class="display --block space --bottom-s">What is your name?</label>
   <input type="text" name="name" id="name" placeholder="Type your name…">
   <% if (locals.error || false) { %>
-    <p class="error-message">Name cannot be blank.</p>
+    <p class="error-message" data-turbo-cache="false">Name cannot be blank.</p>
   <% } %>
   <button type="submit">Sign In</button>
 </form>
