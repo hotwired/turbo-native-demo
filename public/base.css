@@ -22,6 +22,7 @@
   --color-positive: var(--color-teal);
   --color-negative: var(--color-pink);
   --color-border: #DBDBDC;
+  --color-danger: #F00;
   --space-xs: 0.25em;
   --space-s: 0.5em;
   --space-m: 1em;

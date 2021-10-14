@@ -171,3 +171,7 @@ body:not(.index) .page-title {
   background: none;
   color: var(--color-text);
 }
+
+.error-message {
+  color: var(--color-danger);
+}

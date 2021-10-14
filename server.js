@@ -116,6 +116,11 @@ app.get("/signin", (request, response) => {
 })
 
 app.post("/signin", upload.none(), (request, response) => {
+  if (! request.body.name) {
+    response.status(422).render("signin", { title: "Sign In", error: true })
+    return;
+  }
+
   // Cookie expires in one day
   const expiration = new Date(Date.now() + 86400000)
 
