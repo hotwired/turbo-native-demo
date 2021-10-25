@@ -44,6 +44,7 @@ body:not(.index) .page-title {
   background: var(--color-sheet);
   color: var(--color-text);
   position: relative;
+  text-decoration: initial;
 }
 
 .actions__item p {

@@ -252,6 +252,11 @@ button,
   text-decoration: none;
 }
 
+.button:hover,
+.button:active {
+  background: var(--color-tint-alt);
+}
+
 @media (min-width: 45em) {
   button {
     width: auto;
