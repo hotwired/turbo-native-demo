@@ -46,6 +46,13 @@ body:not(.index) .page-title {
   position: relative;
 }
 
+.actions__item p {
+  margin: var(--space-s) 0;
+  font-size: var(--type-xs);
+  line-height: var(--leading-m) !important;
+  text-align: left;
+}
+
 @media (max-width: 44.9em) {
   .actions__item + .actions__item:before {
     content: "";
@@ -62,6 +69,10 @@ body:not(.index) .page-title {
   
   .actions__item:last-child {
     border-radius: 0 0 0.5em 0.5em;
+  }
+
+  .actions__item {
+    text-decoration: none;
   }
 }
 
@@ -83,6 +94,16 @@ body:not(.index) .page-title {
   width: 1.2em;
   height: 1.2em;
   background-color: var(--color-tint);
+}
+
+@media (max-width: 44.9em) {
+  h1 .actions__icon {
+    display: block;
+    position: static;
+    width: 2em;
+    height: 2em;
+    margin: 0 auto 0.5em auto;
+  }
 }
 
 @media (min-width: 45em) {

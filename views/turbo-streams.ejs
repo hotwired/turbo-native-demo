@@ -1,4 +1,7 @@
-<h1 class="page-title">Turbo Streams: Deliver live page changes</h1>
+<h1 class="page-title --turbo-streams">
+  <div class="actions__icon --turbo-streams" aria-hidden="true"></div>
+  Turbo Streams: Deliver live page changes
+</h1>
 
 <p>
   Making partial page changes in response to asynchronous actions is how we make the application feel alive. While Turbo Frames give us such updates in response to direct interactions within a single frame, Turbo Streams let us change any part of the page in response to updates sent over a WebSocket connection, SSE or other transport. (Think an imbox that automatically updates when a new email arrives.)
@@ -22,4 +25,8 @@
 
 <p>
   Now, unlike RJS and SJR, it’s not possible to call custom JavaScript functions as part of a Turbo Streams action. But this is a feature, not a bug. Those techniques can easily end up producing a tangled mess when way too much JavaScript is sent along with the response. Turbo focuses squarely on just updating the DOM, and then assumes you’ll connect any additional behavior using Stimulus actions and lifecycle callbacks.
+</p>
+
+<p>
+  <a href="https://turbo.hotwired.dev/handbook/streams" target="_blank" class="button">Come Alive with Turbo Streams</a>
 </p>
