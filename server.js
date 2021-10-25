@@ -79,6 +79,10 @@ app.get("/redirected", (request, response) => {
   response.render("redirected", { title: "Redirected Page" })
 })
 
+app.get("/reference", (request, response) => {
+  response.render("reference", { title: "Reference", page_class: "index" })
+})
+
 app.get("/files", (request, response) => {
   response.render("files", { title: "Handling Files" })
 })
@@ -101,6 +105,22 @@ app.get("/numbers", (request, response) => {
 
 app.get("/nonexistent", (request, response) => {
   response.status(404).send("Not Found")
+})
+
+app.get("/turbo-drive", (request, response) => {
+  response.render("turbo-drive", { title: "Turbo Drive" })
+})
+
+app.get("/turbo-frames", (request, response) => {
+  response.render("turbo-frames", { title: "Turbo Frames" })
+})
+
+app.get("/turbo-streams", (request, response) => {
+  response.render("turbo-streams", { title: "Turbo Streams" })
+})
+
+app.get("/turbo-native", (request, response) => {
+  response.render("turbo-native", { title: "Turbo Native" })
 })
 
 app.get("/protected", (request, response) => {

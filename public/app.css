@@ -156,6 +156,31 @@ body:not(.index) .page-title {
   mask: url("/images/files.svg") center/100% no-repeat;
 }
 
+.actions__icon.--reference {
+  -webkit-mask: url("/images/reference.svg") center/100% no-repeat;
+  mask: url("/images/reference.svg") center/100% no-repeat;
+}
+
+.actions__icon.--turbo-drive {
+  -webkit-mask: url("/images/turbo-drive.svg") center/100% no-repeat;
+  mask: url("/images/turbo-drive.svg") center/100% no-repeat;
+}
+
+.actions__icon.--turbo-frames {
+  -webkit-mask: url("/images/turbo-frames.svg") center/100% no-repeat;
+  mask: url("/images/turbo-frames.svg") center/100% no-repeat;
+}
+
+.actions__icon.--turbo-streams {
+  -webkit-mask: url("/images/turbo-streams.svg") center/100% no-repeat;
+  mask: url("/images/turbo-streams.svg") center/100% no-repeat;
+}
+
+.actions__icon.--turbo-native {
+  -webkit-mask: url("/images/turbo-native.svg") center/100% no-repeat;
+  mask: url("/images/turbo-native.svg") center/100% no-repeat;
+}
+
 .auth {
   background: var(--color-sheet);
   padding: 0.75em;
