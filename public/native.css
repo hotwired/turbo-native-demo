@@ -3,7 +3,9 @@ a:visited {
   font-weight: inherit;
 }
 
-.page-title { display: none;}
+.page-title:not(.display-native) {
+  display: none;
+}
 
 input[type=text]:focus {
   outline: 0;
