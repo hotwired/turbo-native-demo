@@ -1,0 +1,29 @@
+{
+  "subtitle": "Reference",
+  "items": [
+    {
+      "title": "Turbo Drive",
+      "description": "Turbo Drive accelerates links and form submissions by negating the need for full page reloads.",
+      "path": "/reference/drive",
+      "icon": ""
+    },
+    {
+      "title": "Turbo Frames",
+      "description": "Turbo Frames decompose pages into independent contexts, which scope navigation and can be lazily loaded.",
+      "path": "/reference/frames",
+      "icon": ""
+    },
+    {
+      "title": "Turbo Streams",
+      "description": "Turbo Streams deliver page changes over WebSocket, SSE or in response to form submissions using just HTML and a set of CRUD-like actions.",
+      "path": "/reference/streams",
+      "icon": ""
+    },
+    {
+      "title": "Turbo Native",
+      "description": "Turbo Native lets your majestic monolith form the center of your native iOS and Android apps, with seamless transitions between web and native sections.",
+      "path": "/reference/native",
+      "icon": ""
+    }
+  ]
+}

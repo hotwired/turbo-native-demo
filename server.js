@@ -11,6 +11,7 @@ const PORT = process.env.PORT || 45678
 
 app.set("view engine", "ejs")
 app.use(express.static("public"))
+app.use(express.static("json"))
 app.use('/dist', express.static(__dirname + '/node_modules/@hotwired/turbo/dist/'));
 app.use(cookieParser())
 app.use(layouts)
@@ -46,6 +47,16 @@ app.use((request, response, next) => {
 
 app.use((request, response, next) => {
   console.log(`${Date()} -- ${request.method} ${request.path}`)
+  next()
+})
+
+// JSON
+
+app.use((request, response, next) => {
+  if (request.url.endsWith(".json")) {
+    res.type('json')
+  }
+
   next()
 })
 
