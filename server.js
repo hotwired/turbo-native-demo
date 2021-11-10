@@ -11,6 +11,7 @@ const PORT = process.env.PORT || 45678
 
 app.set("view engine", "ejs")
 app.use(express.static("public"))
+app.use(express.static("json"))
 app.use('/dist', express.static(__dirname + '/node_modules/@hotwired/turbo/dist/'));
 app.use(cookieParser())
 app.use(layouts)
@@ -49,6 +50,16 @@ app.use((request, response, next) => {
   next()
 })
 
+// JSON
+
+app.use((request, response, next) => {
+  if (request.url.endsWith(".json")) {
+    res.type('json')
+  }
+
+  next()
+})
+
 // Routes
 
 app.get("/", (request, response) => {
@@ -79,6 +90,10 @@ app.get("/redirected", (request, response) => {
   response.render("redirected", { title: "Redirected Page" })
 })
 
+app.get("/reference", (request, response) => {
+  response.render("reference", { title: "Reference", page_class: "index" })
+})
+
 app.get("/files", (request, response) => {
   response.render("files", { title: "Handling Files" })
 })
@@ -101,6 +116,22 @@ app.get("/numbers", (request, response) => {
 
 app.get("/nonexistent", (request, response) => {
   response.status(404).send("Not Found")
+})
+
+app.get("/reference/turbo-drive", (request, response) => {
+  response.render("turbo-drive", { title: "Turbo Drive" })
+})
+
+app.get("/reference/turbo-frames", (request, response) => {
+  response.render("turbo-frames", { title: "Turbo Frames" })
+})
+
+app.get("/reference/turbo-streams", (request, response) => {
+  response.render("turbo-streams", { title: "Turbo Streams" })
+})
+
+app.get("/reference/turbo-native", (request, response) => {
+  response.render("turbo-native", { title: "Turbo Native" })
 })
 
 app.get("/protected", (request, response) => {

@@ -249,6 +249,12 @@ button,
   line-height: 1.25;
   border: 0;
   border-radius: 0.5em;
+  text-decoration: none;
+}
+
+.button:hover,
+.button:active {
+  background: var(--color-tint-alt);
 }
 
 @media (min-width: 45em) {
