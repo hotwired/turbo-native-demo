@@ -23,6 +23,6 @@
   "license": "MIT",
   "devDependencies": {
     "multer": "^1.4.3",
-    "nodemon": "^2.0.13"
+    "nodemon": "^2.0.20"
   }
 }
