@@ -1,7 +1,6 @@
 import express from "express"
 import layouts from "express-ejs-layouts"
 import cookieParser from "cookie-parser"
-import bodyParser from "body-parser"
 import multer from "multer"
 const upload = multer()
 const app = express();
@@ -93,11 +92,13 @@ app.post("/new", (request, response) => {
 })
 
 app.get("/strada-form", (request, response) => {
-  response.render("strada-form", { title: "Strada Example with Form" })
+  response.render("strada-form", { title: "Strada" })
 })
 
 app.post("/strada-form", (request, response) => {
-  response.redirect("/success")
+  setTimeout(() => {
+    response.redirect("/success")
+  }, 1500)
 })
 
 app.get("/success", (request, response) => {

@@ -1,10 +1,13 @@
-<h1 class="page-title">Strada Example with a Form</h1>
+<h1 class="page-title">Strada</h1>
+
+<h3 class="space --top-flush">Form + Submit example</h2>
+
 <p>
   This screen contains a form associated with a Strada <b>form</b> component. It contains a web <b>submit</b> button, but since the demo Turbo Native demo app supports the <b>form</b> component, the web button is hidden and is replaced with a native button in the top right native app bar.
 </p>
 
 <p>
-  Submitting this form will redirect to a success page. The native app will receive that visit proposal and initiate a new visit.
+  Submitting this form will redirect to a success page after a short delay. The native app will receive that visit proposal and initiate a new visit.
 </p>
 
 <p>
@@ -17,6 +20,7 @@
   data-action="turbo:submit-start->bridge--form#submitStart turbo:submit-end->bridge--form#submitEnd">
 
   <button
+    class="button"
     type="submit"
     data-bridge--form-target="submit"
     data-bridge-title="Submit">

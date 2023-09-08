@@ -30,11 +30,3 @@ input[type=text]:focus {
   border: 0;
   border-radius: 0.5em;
 }
-
-/* Strada — hide web elements for registered components */
-
-[data-bridge-components~=form] {
-  [data-controller~=bridge--form] {
-    [type=submit] { display: none; }
-  }
-}

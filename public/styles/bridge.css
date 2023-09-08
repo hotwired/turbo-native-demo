@@ -1,0 +1,7 @@
+/* Strada — hide web elements for registered components */
+
+[data-bridge-components~=form] {
+  [data-controller~=bridge--form] {
+    [type=submit] { display: none; }
+  }
+}

@@ -257,6 +257,10 @@ button,
   background: var(--color-tint-alt);
 }
 
+.button:disabled {
+  background: var(--color-gray);
+}
+
 @media (min-width: 45em) {
   button {
     width: auto;

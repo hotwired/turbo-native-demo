@@ -12,18 +12,20 @@ export default class extends BridgeComponent {
 
   notifyBridgeOfConnect() {
     const submitButton = new BridgeElement(this.submitTarget)
-    const title = submitButton.title
+    const submitTitle = submitButton.title
 
-    this.send("connect", { title }, () => {
+    this.send("connect", { submitTitle }, () => {
       this.submitTarget.click()
     })
   }
 
   submitStart(event) {
+    this.submitTarget.disabled = true
     this.send("submitDisabled")
   }
 
   submitEnd(event) {
+    this.submitTarget.disabled = false
     this.send("submitEnabled")
   }
 }
