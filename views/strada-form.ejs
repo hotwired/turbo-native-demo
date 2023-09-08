@@ -1,0 +1,26 @@
+<h1 class="page-title">Strada Example with a Form</h1>
+<p>
+  This screen contains a form associated with a Strada <b>form</b> component. It contains a web <b>submit</b> button, but since the demo Turbo Native demo app supports the <b>form</b> component, the web button is hidden and is replaced with a native button in the top right native app bar.
+</p>
+
+<p>
+  Submitting this form will redirect to a success page. The native app will receive that visit proposal and initiate a new visit.
+</p>
+
+<p>
+  Notice that submitting the form will also cause it to dismiss this modal screen. That's handled by the demo app's router.
+</p>
+
+<form
+  method="post"
+  data-controller="bridge--form"
+  data-action="turbo:submit-start->bridge--form#submitStart turbo:submit-end->bridge--form#submitEnd">
+
+  <button
+    type="submit"
+    data-bridge--form-target="submit"
+    data-bridge-title="Submit">
+    Submit Form
+  </button>
+
+</form>

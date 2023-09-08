@@ -1,8 +1,8 @@
-const express = require("express");
-const layouts = require("express-ejs-layouts")
-const cookieParser = require("cookie-parser")
-const bodyParser = require("body-parser")
-const multer = require('multer')
+import express from "express"
+import layouts from "express-ejs-layouts"
+import cookieParser from "cookie-parser"
+import bodyParser from "body-parser"
+import multer from "multer"
 const upload = multer()
 const app = express();
 
@@ -11,8 +11,10 @@ const PORT = process.env.PORT || 45678
 
 app.set("view engine", "ejs")
 app.use(express.static("public"))
+app.use(express.static("public/javascript"))
 app.use(express.static("json"))
-app.use('/dist', express.static(__dirname + '/node_modules/@hotwired/turbo/dist/'));
+app.use('/dist', express.static('./node_modules/@hotwired/turbo/dist/'));
+app.use('/dist', express.static('./node_modules/@hotwired/stimulus/dist/'));
 app.use(cookieParser())
 app.use(layouts)
 
@@ -89,6 +91,14 @@ app.get("/new", (request, response) => {
 })
 
 app.post("/new", (request, response) => {
+  response.redirect("/success")
+})
+
+app.get("/strada-form", (request, response) => {
+  response.render("strada-form", { title: "Strada Example with Form" })
+})
+
+app.post("/strada-form", (request, response) => {
   response.redirect("/success")
 })
 

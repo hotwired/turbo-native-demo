@@ -14,14 +14,14 @@
       <link rel="stylesheet" href="/native.css">
     <% } %>
 
-    <script src="/dist/turbo.es2017-umd.js" %>"></script>
+    <script type="module" src="/application.js"></script>
   </head>
   <body class="<%= locals.page_class || "" %>">
     <main id="content" class="grid pad --bottom-soft">
       <%- body %>
 
       <footer class="text --size-s --color-subtle space --top-xxl">
-        Rendered <%- new Date() %> via Turbo 7
+        Rendered <%- new Date().toLocaleString() %> via Turbo 7
       </footer>
     </main>
   </body>

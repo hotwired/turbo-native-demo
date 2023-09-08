@@ -3,10 +3,12 @@
   "version": "0.0.1",
   "description": "A demo app for Turbo Native apps",
   "main": "server.js",
+  "type":"module",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
+    "@hotwired/stimulus": "^3.2.2",
     "@hotwired/turbo": "^7.0.1",
     "body-parser": "^1.20.2",
     "cookie-parser": "^1.4.5",
