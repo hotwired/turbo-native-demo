@@ -13,8 +13,6 @@ app.set("view engine", "ejs")
 app.use(express.static("public"))
 app.use(express.static("public/javascript"))
 app.use(express.static("json"))
-app.use('/dist', express.static('./node_modules/@hotwired/turbo/dist/'));
-app.use('/dist', express.static('./node_modules/@hotwired/stimulus/dist/'));
 app.use(cookieParser())
 app.use(layouts)
 
