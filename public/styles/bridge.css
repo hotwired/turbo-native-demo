@@ -1,13 +1,18 @@
-/* Strada — hide web elements for registered components */
+/* Strada — hide elements for registered bridge components */
 
-[data-bridge-components~=form] {
-  [data-controller~=bridge--form] {
-    [type=submit] { display: none; }
-  }
+/*
+ * Hide the submit button when the "form" component is registered.
+ */
+[data-bridge-components~="form"]
+[data-controller~="bridge--form"]
+[type="submit"] {
+  display: none;
 }
 
-[data-bridge-components~=overflow-menu] {
-  [data-controller~=bridge--overflow-menu] {
-    display: none;
-  }
+/*
+ * Hide the overflow button when the "overflow" component is registered.
+ */
+[data-bridge-components~="overflow-menu"]
+[data-controller~="bridge--overflow-menu"] {
+  display: none;
 }
