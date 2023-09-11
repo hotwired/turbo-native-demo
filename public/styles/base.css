@@ -252,7 +252,6 @@ button,
   text-decoration: none;
 }
 
-.button:hover,
 .button:active {
   background: var(--color-tint-alt);
 }

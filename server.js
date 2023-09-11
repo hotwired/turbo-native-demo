@@ -101,6 +101,14 @@ app.post("/strada-form", (request, response) => {
   }, 1500)
 })
 
+app.get("/strada-menu", (request, response) => {
+  response.render("strada-menu", { title: "Strada" })
+})
+
+app.get("/strada-overflow", (request, response) => {
+  response.render("strada-overflow", { title: "Strada" })
+})
+
 app.get("/success", (request, response) => {
   response.render("success", { title: "It Worked!" })
 })

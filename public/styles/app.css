@@ -63,11 +63,11 @@ body:not(.index) .page-title {
     left: 3em;
     border-top: 0.5px solid var(--color-border);
   }
-  
+
   .actions__item:first-child {
     border-radius: 0.5em 0.5em 0 0;
   }
-  
+
   .actions__item:last-child {
     border-radius: 0 0 0.5em 0.5em;
   }
@@ -217,4 +217,47 @@ body:not(.index) .page-title {
   margin: 0;
   background: none;
   color: var(--color-text);
+}
+
+.dialog {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  padding-top: 100px;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgb(0,0,0);
+  background-color: rgba(0,0,0,0.4);
+}
+
+.dialog-content {
+  background-color: var(--color-sheet);
+  border-radius: 0.5em;
+  margin: auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+}
+
+.dialog-close {
+  color: var(--color-text-subtle);
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.dialog-close:hover,
+.dialog-close:focus {
+  color: var(--color-text);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.result {
+  color: var(--color-pink);
+  text-align: center;
+  padding-top: 20px;
 }

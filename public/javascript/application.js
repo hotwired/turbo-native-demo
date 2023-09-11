@@ -2,7 +2,19 @@ import "@hotwired/turbo"
 import { Application } from "@hotwired/stimulus"
 import "./vendor/strada.js"
 
-import FormController from "./controllers/bridge/form_controller.js"
+// Controllers
+import MenuController from "./controllers/menu_controller.js"
 
+// Bridge Components
+import BridgeFormController from "./controllers/bridge/form_controller.js"
+import BridgeMenuController from "./controllers/bridge/menu_controller.js"
+
+// Start Stimulus
 window.Stimulus = Application.start()
-Stimulus.register("bridge--form", FormController)
+
+// Register Controllers
+Stimulus.register("menu", MenuController)
+
+// Register Bridge Components
+Stimulus.register("bridge--form", BridgeFormController)
+Stimulus.register("bridge--menu", BridgeMenuController)

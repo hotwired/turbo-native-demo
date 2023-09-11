@@ -1,0 +1,66 @@
+<h1 class="page-title">Strada</h1>
+
+<h3 class="space --top-flush">Menu example</h2>
+
+<p>
+  This screen contains a menu associated with a Strada <b>menu</b> component. The page contains a button below to open a web-based menu that contains several options to choose from, but since the Turbo Native demo app supports the <b>menu</b> component, the web menu is hidden and replaced with a natively displayed menu.
+</p>
+
+<div data-controller="menu bridge--menu">
+
+  <button
+    class="button"
+    data-action="click->bridge--menu#show click->menu#show">
+    Open Menu
+  </button>
+
+  <div class="dialog"
+    data-menu-target="dialog"
+    data-action="click@window->menu#hideOnClickOutside">
+
+    <div class="dialog-content">
+
+      <span class="dialog-close" data-action="click->menu#hide">&times;</span>
+      <p data-bridge--menu-target="title">Select an option</p>
+
+      <button
+        class="button"
+        data-menu-target="item"
+        data-bridge--menu-target="item"
+        data-action="click->menu#itemSelected">
+        Option One
+      </button>
+
+      <button
+        class="button"
+        data-menu-target="item"
+        data-bridge--menu-target="item"
+        data-action="click->menu#itemSelected">
+        Option Two
+      </button>
+
+      <button
+        class="button"
+        data-menu-target="item"
+        data-bridge--menu-target="item"
+        data-action="click->menu#itemSelected">
+        Option Three
+      </button>
+
+      <button
+        class="button"
+        data-menu-target="item"
+        data-bridge--menu-target="item"
+        data-action="click->menu#itemSelected">
+        Option Four
+      </button>
+
+    </div>
+
+  </div>
+
+  <h4 class="result" data-menu-target="result">
+    <!-- Result for selected item here -->
+  </h4>
+
+</div>
