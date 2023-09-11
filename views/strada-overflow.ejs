@@ -1,20 +1,22 @@
 <h1 class="page-title">Strada</h1>
 
-<h3 class="space --top-flush">Menu example</h2>
+<h3 class="space --top-flush">Overflow + Menu example</h2>
 
 <p>
-  This screen contains a menu associated with a Strada <b>menu</b> component. The page contains a button below to open a web-based menu that contains several options to choose from.
+  This screen contains a button associated with a Strada <b>overflow-menu</b> component. The page also contains a list of buttons in a web-based menu associated with a Strada <b>menu</b> component that contains several options to choose from.
 </p>
 
 <p>
-  Since the Turbo Native demo app supports the <b>menu</b> component, the web menu is hidden and replaced with a natively displayed menu. Tapping on a native menu option replies back to the web <b>menu</b> component with the <b>selectedIndex</b> of the selected option.
+  Since the demo Turbo Native demo app supports the <b>overflow-menu</b> component and the <b>menu</b> component, the web button to open the menu is hidden and replaced with a native 3-dot menu in the top right native app bar. Tapping on that 3-dot menu will display a native menu driven by the <b>menu</b> component.
 </p>
 
 <div data-controller="menu bridge--menu">
 
   <button
     class="button"
-    data-action="click->bridge--menu#show click->menu#show">
+    data-controller="bridge--overflow-menu"
+    data-action="click->bridge--menu#show click->menu#show"
+    data-bridge-title="Options">
     Open Menu
   </button>
 

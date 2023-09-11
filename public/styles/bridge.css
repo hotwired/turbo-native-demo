@@ -5,3 +5,9 @@
     [type=submit] { display: none; }
   }
 }
+
+[data-bridge-components~=overflow-menu] {
+  [data-controller~=bridge--overflow-menu] {
+    display: none;
+  }
+}
