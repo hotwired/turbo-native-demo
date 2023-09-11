@@ -1,23 +1,29 @@
 <h1 class="page-title">Strada</h1>
 
-<h3 class="space --top-flush">Form + Submit example</h2>
+<h3 class="space --top-flush">Form example</h2>
 
 <p>
-  This screen contains a form associated with a Strada <b>form</b> component. It contains a web <b>submit</b> button, but since the demo Turbo Native demo app supports the <b>form</b> component, the web button is hidden and is replaced with a native button in the top right native app bar.
+  This screen contains a form associated with a Strada <b>form</b> component. It contains a web <b>submit</b> button that submits the form and redirects to a success page after a short delay.
 </p>
 
 <p>
-  Submitting this form will redirect to a success page after a short delay. The native app will receive that visit proposal and initiate a new visit.
+  Since the Turbo Native demo app supports the <b>form</b> component, the web submit button is hidden and is replaced with a native button in the top-right native app bar.
 </p>
 
 <p>
-  Notice that submitting the form will also cause it to dismiss this modal screen. That's handled by the demo app's router.
+  Displaying the <b>submit</b> button in the top-right of the screen is a typical convention in mobile apps, has the benefit of never being hidden underneath the virtual keyboard, and is always visible no matter where you're scrolled on the page.
 </p>
 
 <form
   method="post"
   data-controller="bridge--form"
   data-action="turbo:submit-start->bridge--form#submitStart turbo:submit-end->bridge--form#submitEnd">
+
+  <label for="first-name" class="display --block space --bottom-s">What is your first name?</label>
+  <input type="text" name="first-name" id="first-name" placeholder="Type your first name…" />
+
+  <label for="last-name" class="display --block space --bottom-s">What is your last name?</label>
+  <input type="text" name="last-name" id="last-name" placeholder="Type your last name…" />
 
   <button
     class="button"
