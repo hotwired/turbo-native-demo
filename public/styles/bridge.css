@@ -10,7 +10,7 @@
 }
 
 /*
- * Hide the overflow button when the "overflow" component is registered.
+ * Hide the overflow button when the "overflow-menu" component is registered.
  */
 [data-bridge-components~="overflow-menu"]
 [data-controller~="bridge--overflow-menu"] {
