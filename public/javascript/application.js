@@ -1,6 +1,6 @@
 import "@hotwired/turbo"
 import { Application } from "@hotwired/stimulus"
-import "./vendor/strada.js"
+import "@hotwired/strada"
 
 // Controllers
 import MenuController from "./controllers/menu_controller.js"

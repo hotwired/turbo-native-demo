@@ -1,5 +1,4 @@
-import { BridgeComponent } from "/vendor/strada.js"
-import { BridgeElement } from "/vendor/strada.js"
+import { BridgeComponent } from "@hotwired/strada"
 
 export default class extends BridgeComponent {
   static component = "overflow-menu"
