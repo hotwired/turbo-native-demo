@@ -252,9 +252,12 @@ button,
   text-decoration: none;
 }
 
-.button:hover,
 .button:active {
   background: var(--color-tint-alt);
+}
+
+.button:disabled {
+  background: var(--color-gray);
 }
 
 @media (min-width: 45em) {
