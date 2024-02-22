@@ -1,14 +1,22 @@
 <h1 class="page-title">How’d You Get Here?</h1>
 <p>When you tap the link to this page, Turbo proposes a visit to the app to decide how to handle the URL. In this case, it chooses to present a Turbo-based web screen.</p>
 <p>Go back and try <em>Intercept with a native view</em> to see how to load a native screen instead.</p>
-<p>This link will be presented using the same advance presentation:</p>
-<p><a href="/two" class="button@native space --bottom-flush">Advance to another webpage</a></p>
-<p>And this next one does a <em>replace</em> instead:</p>
-<p><a href="/two?action=replace" class="button@native space --buttom-flush" data-turbo-action="replace">Replace with another webpage</a></p>
-<p>And this next one replaces to the current page (morphs):</p>
-<p><a href="/one" class="button@native space --buttom-flush" data-turbo-action="replace">Refresh</a></p>
-<p>And this one programatically refreshes:</p>
-<p><a id="refresh" class="button@native space --buttom-flush" data-turbo-action="replace">Refresh programatically</a></p>
+
+<p class="space --bottom-s --top-m">This link will be presented using the same <code>advance</code> visit presentation:</p>
+<p><a href="/two" class="button@native">Advance to another webpage</a></p>
+
+<p class="space --bottom-s">This performs a <code>replace</code> visit instead:</p>
+<p><a href="/two?action=replace" class="button@native" data-turbo-action="replace">Replace with another webpage</a></p>
+
+<p class="space --bottom-s">This performs a <code>replace</code> visit to the current page, refreshing its content with morphing:</p>
+<p><a href="/one" class="button@native" data-turbo-action="replace">Refresh</a></p>
+
+<p class="space --bottom-s">This programatically refreshes the current page, performing a <code>replace</code> visit and refreshing its content with morphing:</p>
+<p><a id="refresh" class="button@native" data-turbo-action="replace">Refresh programatically</a></p>
+
+<footer class="text --size-s --color-subtle space --top-xxl">
+  Rendered <%- new Date().toLocaleString() %> via Turbo 8
+</footer>
 
 <script>
   document.getElementById("refresh").addEventListener("click", () => {
