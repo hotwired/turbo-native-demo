@@ -5,3 +5,13 @@
 <p><a href="/two" class="button@native space --bottom-flush">Advance to another webpage</a></p>
 <p>And this next one does a <em>replace</em> instead:</p>
 <p><a href="/two?action=replace" class="button@native space --buttom-flush" data-turbo-action="replace">Replace with another webpage</a></p>
+<p>And this next one replaces to the current page (morphs):</p>
+<p><a href="/one" class="button@native space --buttom-flush" data-turbo-action="replace">Refresh</a></p>
+<p>And this one programatically refreshes:</p>
+<p><a id="refresh" class="button@native space --buttom-flush" data-turbo-action="replace">Refresh programatically</a></p>
+
+<script>
+  document.getElementById("refresh").addEventListener("click", () => {
+    Turbo.session.refresh(document.baseURI)
+  })
+</script>
